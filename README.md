@@ -1,3 +1,6 @@
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=Jenak26.SnapOrder)
+
+
 # SnapOrder
 
 Snap a photo of any dish. Find and order it on Swiggy in seconds.
@@ -6,7 +9,6 @@ Snap a photo of any dish. Find and order it on Swiggy in seconds.
 
 ## Demo
 
-- 🎥 Watch the demo →
 - 🚀 Live app → https://snap-order-six.vercel.app/
 
 The demo shows the complete flow from photo upload to order tracking: Gemini identifies the dish, Swiggy Food MCP finds matching restaurants, and the user adds a dish to cart. The agent can discover and apply coupons before order placement. After checkout, SnapOrder tracks the live order status in a four-stage timeline.
