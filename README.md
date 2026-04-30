@@ -145,9 +145,9 @@ npm run dev
 
 ## Built By
 
-Janak Kabra · 2nd year CS @ VIT Vellore · Targeting MS CS/AI at top global programs (Fall 2027)
+Janak Kabra · 2nd year CS @ VIT Vellore 
 
-GitHub: [link] | LinkedIn: [link] | Email: [email]
+
 
 ---
 
