@@ -10,6 +10,21 @@ import { GoogleGenAI } from "@google/genai";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const GEMINI_VISION_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+
+function isRetryableGeminiError(error: unknown) {
+  const status = (error as { status?: number })?.status;
+  const message =
+    error instanceof Error ? error.message : JSON.stringify(error ?? "");
+
+  return (
+    status === 429 ||
+    status === 503 ||
+    message.includes("RESOURCE_EXHAUSTED") ||
+    message.includes("UNAVAILABLE") ||
+    message.includes("high demand")
+  );
+}
 
 /**
  * POST /api/analyze-image
@@ -89,28 +104,49 @@ If the image does NOT contain food, return EXACTLY:
   "search_query": ""
 }`;
 
-    const aiResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [
+    let aiResponse: Awaited<ReturnType<typeof ai.models.generateContent>> | null = null;
+    let lastGeminiError: unknown;
+
+    for (const model of GEMINI_VISION_MODELS) {
+      try {
+        aiResponse = await ai.models.generateContent({
+          model,
+          contents: [
             {
-              inlineData: {
-                data: base64Data,
-                mimeType: file.type,
-              },
-            },
-            {
-              text: prompt,
+              role: "user",
+              parts: [
+                {
+                  inlineData: {
+                    data: base64Data,
+                    mimeType: file.type,
+                  },
+                },
+                {
+                  text: prompt,
+                },
+              ],
             },
           ],
-        },
-      ],
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
+          config: {
+            responseMimeType: "application/json",
+          },
+        });
+        break;
+      } catch (error) {
+        lastGeminiError = error;
+        console.warn(`[analyze-image] ${model} failed`, error);
+
+        if (!isRetryableGeminiError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    if (!aiResponse) {
+      throw lastGeminiError instanceof Error
+        ? lastGeminiError
+        : new Error("Gemini image analysis failed");
+    }
 
     // `text` is a getter property in @google/genai v1.x, not a method
     const jsonText = aiResponse.text;
