@@ -6,8 +6,8 @@ Snap a photo of any dish. Find and order it on Swiggy in seconds.
 
 ## Demo
 
-- 🎥 Watch the demo → LOOM_URL_HERE
-- 🚀 Live app → VERCEL_URL_HERE
+- 🎥 Watch the demo →
+- 🚀 Live app → https://snap-order-six.vercel.app/
 
 The demo shows the complete flow from photo upload to order tracking: Gemini identifies the dish, Swiggy Food MCP finds matching restaurants, and the user adds a dish to cart. The agent can discover and apply coupons before order placement. After checkout, SnapOrder tracks the live order status in a four-stage timeline.
 
@@ -101,7 +101,7 @@ Browser (Next.js on Vercel)
 ### Quick Start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/snaporder && cd snaporder
+git clone https://github.com/jenak26/SnapOrder && cd snaporder
 npm install
 cp .env.example .env.local
 ```
