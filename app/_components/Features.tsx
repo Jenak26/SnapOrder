@@ -65,23 +65,18 @@ export default function Features() {
     <section id="features" className="relative py-28 sm:py-36">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/2 left-0 h-[400px] w-[400px] rounded-full bg-accent/5 blur-[100px]" />
-        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-purple-500/5 blur-[80px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
         {/* Section header */}
-        <div className="mb-16 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-1.5 text-xs font-medium text-accent">
-            <Zap size={12} />
-            <span>How It Works</span>
-          </div>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Food ordering,{" "}
-            <span className="text-accent">reimagined</span>
+        <div className="mb-16 max-w-2xl">
+          <p className="eyebrow mb-4">How it works</p>
+          <h2 className="display text-4xl sm:text-5xl md:text-6xl">
+            Food ordering, <span className="display-em">reimagined</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-muted sm:text-lg">
-            We combined computer vision AI with the best local restaurants to
-            create the fastest way to go from craving to eating.
+          <p className="mt-4 max-w-xl text-base text-muted sm:text-lg">
+            Computer vision on one side, Swiggy&apos;s restaurant network on the
+            other. The shortest path from craving to eating.
           </p>
         </div>
 

@@ -17,7 +17,14 @@
       "Bash(curl -s http://localhost:3000/api/auth/session)",
       "Bash(curl -s \"http://localhost:3000/api/agent/track?orderId=TEST123\")",
       "Bash(curl -sN -X POST http://localhost:3000/api/agent/chat -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(grep -o '\"type\":\"[a-z_]*\"\\\\|\"tool\":\"[a-z_]*\"\\\\|\"content\":\"[^\"]\\\\{0,180\\\\}')"
+      "Bash(grep -o '\"type\":\"[a-z_]*\"\\\\|\"tool\":\"[a-z_]*\"\\\\|\"content\":\"[^\"]\\\\{0,180\\\\}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/analyze-image -F \"image=@public/food-pizza.png;type=image/png\" -F \"lat=12.9716\" -F \"lng=77.5946\" --max-time 90)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(grep -iv \"^\\\\s*$\")",
+      "Bash(awk '{print $5}')",
+      "Bash(npm start *)",
+      "Bash(curl -s -o /dev/null -w \"home %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s \"http://localhost:3000/api/agent/track?orderId=PRODCHECK\")"
     ]
   }
 }

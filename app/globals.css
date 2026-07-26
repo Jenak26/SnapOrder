@@ -18,6 +18,33 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+}
+
+/* ── Display type ──
+   Headlines carry the brand voice; UI stays on the sans for legibility.
+   Optical sizing at display scale wants negative tracking. */
+.display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.display-em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* Section headers: an eyebrow + left-aligned title reads as edited,
+   where a centred title + subtitle on every section reads as generated. */
+.eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
 }
 
 /* ── Base ── */

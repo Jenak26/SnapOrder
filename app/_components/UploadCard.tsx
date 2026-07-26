@@ -267,19 +267,17 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
 
       <div className="relative z-10 mx-auto max-w-3xl px-5 lg:px-8">
         {/* Section header */}
-        <div className="mb-12 text-center flex flex-col items-center">
-          <LocationBadge 
-            status={geoStatus} 
-            city={city} 
-            onRequestRefresh={() => requestLocation(true)} 
+        <div className="mb-12 flex max-w-2xl flex-col items-start">
+          <LocationBadge
+            status={geoStatus}
+            city={city}
+            onRequestRefresh={() => requestLocation(true)}
           />
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Upload Your{" "}
-            <span className="text-accent">Food Photo</span>
+          <h2 className="display mt-5 text-4xl sm:text-5xl">
+            Upload your <span className="display-em">food photo</span>
           </h2>
-          <p className="mt-3 text-base text-muted">
-            Our AI analyzes your photo and finds the closest matching dish
-            instantly
+          <p className="mt-4 text-base text-muted">
+            We identify the dish, then find who makes it closest to you.
           </p>
         </div>
 

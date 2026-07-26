@@ -68,15 +68,16 @@ export default function DemoPreview({ results, analysis }: Props) {
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
         {/* Section header */}
-        <div className="mb-14 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <div className="mb-14 max-w-2xl">
+          <p className="eyebrow mb-4">{isLive ? "Results" : "Walkthrough"}</p>
+          <h2 className="display text-4xl sm:text-5xl">
             {isLive ? (
-              <>Your <span className="text-accent">Matches</span></>
+              <>Your <span className="display-em">matches</span></>
             ) : (
-              <>See It In <span className="text-accent">Action</span></>
+              <>See it in <span className="display-em">action</span></>
             )}
           </h2>
-          <p className="mt-3 text-base text-muted">
+          <p className="mt-4 text-base text-muted">
             {isLive
               ? "Here are the dishes that match your uploaded photo"
               : "Here\u0027s what happens after you upload a photo"}

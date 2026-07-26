@@ -9,44 +9,33 @@ export default function Hero() {
       id="hero"
       className="relative flex min-h-[88vh] items-center justify-center overflow-hidden px-5 pb-12 pt-28 sm:min-h-[86vh] sm:pb-16 sm:pt-32"
     >
-      {/* Background gradient orbs */}
+      {/* A single warm source, low and behind the copy. Three stacked orbs plus a
+          grid overlay was doing the work of none of them. */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-accent/10 blur-[120px]" />
-        <div className="absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-orange-600/8 blur-[100px]" />
-        <div className="absolute top-1/3 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-amber-500/5 blur-[80px]" />
+        <div className="absolute -top-32 left-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-accent/8 blur-[130px]" />
       </div>
-
-      {/* Grid lines background */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
 
       <div className="relative z-10 mx-auto max-w-5xl lg:px-8">
         <div className="grid items-center gap-12">
           {/* Left: Copy */}
-          <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+          {/* Left-aligned: centring every element is the strongest "generated
+              layout" tell, and asymmetry gives the eye somewhere to start. */}
+          <div className="flex max-w-4xl flex-col items-start text-left">
             {/* Badge */}
             <div className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-1.5 text-xs font-medium text-accent">
               <Sparkles size={12} />
               <span>AI-Powered Food Recognition</span>
             </div>
 
-            <h1 className="animate-fade-up delay-100 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Snap a Photo.
+            <h1 className="display animate-fade-up delay-100 text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem]">
+              Snap a photo.
               <br />
-              <span className="bg-gradient-to-r from-accent via-amber-400 to-accent bg-clip-text text-transparent animate-gradient">
-                Get Your Food.
-              </span>
+              <span className="display-em">Get your food.</span>
             </h1>
 
-            <p className="animate-fade-up delay-200 mt-7 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-              Upload any food photo and our AI instantly finds the closest
-              matching dish from top restaurants near you. From craving to
-              doorstep in minutes.
+            <p className="animate-fade-up delay-200 mt-8 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+              Point your camera at any dish. We identify it, find who makes it
+              near you, and order it — in about a minute.
             </p>
 
             <div className="animate-fade-up delay-300 mt-11 flex flex-col gap-4 sm:flex-row">
@@ -70,28 +59,14 @@ export default function Hero() {
               </a>
             </div>
 
-            {/* Social proof */}
-            <div className="animate-fade-up delay-400 mt-12 flex items-center gap-4">
-              <div className="flex -space-x-2.5">
-                {[
-                  "bg-gradient-to-br from-orange-400 to-red-500",
-                  "bg-gradient-to-br from-blue-400 to-purple-500",
-                  "bg-gradient-to-br from-green-400 to-teal-500",
-                  "bg-gradient-to-br from-pink-400 to-rose-500",
-                ].map((bg, i) => (
-                  <div
-                    key={i}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-[10px] font-bold text-white ${bg}`}
-                  >
-                    {["AK", "PS", "MR", "JD"][i]}
-                  </div>
-                ))}
-              </div>
-              <div className="text-sm">
-                <span className="font-semibold text-foreground">12,000+</span>{" "}
-                <span className="text-muted">happy foodies</span>
-              </div>
-            </div>
+            {/*
+              The invented "12,000+ happy foodies" and fake avatars came out.
+              Fabricated metrics are a liability in front of a Swiggy reviewer;
+              the real capability is the more convincing claim anyway.
+            */}
+            <p className="animate-fade-up delay-400 mt-12 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+              Gemini vision · Swiggy Food MCP · live order tracking
+            </p>
           </div>
 
           {/* Right: Hero image */}

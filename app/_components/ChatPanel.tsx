@@ -34,10 +34,12 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   track_food_order: "Getting order status",
 };
 
+// Emoji-prefixed suggestion chips are a strong "generated UI" tell, and the
+// emoji also ends up in the message the agent receives.
 const QUICK_ACTIONS = [
-  "🍗 Find Butter Chicken near me",
-  "🌿 Show veg options under ₹200",
-  "⚡ What's fastest to deliver?",
+  "Find butter chicken near me",
+  "Show veg options under ₹200",
+  "What's fastest to deliver?",
 ];
 
 /**
@@ -189,7 +191,7 @@ export default function ChatPanel({
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent glow-orange-lg">
                 <Bot size={32} />
               </div>
-              <h2 className="mb-2 text-xl font-bold text-white">How can I help?</h2>
+              <h2 className="display mb-2 text-3xl text-white">How can I help?</h2>
               <p className="mb-8 max-w-[250px] text-sm text-white/60">
                 I can find specific dishes, recommend restaurants, and place orders for you.
               </p>

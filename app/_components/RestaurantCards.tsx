@@ -39,12 +39,13 @@ export default function RestaurantCards({ analysis }: Props) {
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
         {/* Section header */}
-        <div className="mb-14 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            {titlePrefix} <span className="text-accent">Restaurants</span> {titleSuffix}
+        <div className="mb-14 max-w-2xl">
+          <p className="eyebrow mb-4">Nearby</p>
+          <h2 className="display text-4xl sm:text-5xl">
+            {titlePrefix} <span className="display-em">restaurants</span> {titleSuffix.toLowerCase()}
           </h2>
-          <p className="mt-3 text-base text-muted">
-            Partnered with the best restaurants in your area
+          <p className="mt-4 text-base text-muted">
+            Live from Swiggy, ranked by how well they match your dish.
           </p>
         </div>
 
