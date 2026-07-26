@@ -18,7 +18,7 @@ export class MockProvider implements RestaurantProvider {
         eta: r.deliveryTime,
         rating: r.rating,
         // Mock a delivery fee based on distance
-        deliveryFee: r.distance === "0.3 mi" ? 0 : 40,
+        deliveryFee: r.distance === "0.3 km" ? 0 : 40,
         distance: r.distance,
         menuPreview: r.popular,
         image: r.image,

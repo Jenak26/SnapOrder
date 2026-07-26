@@ -26,16 +26,25 @@ export default function Home() {
   const setActiveOrder = useOrderStore((s) => s.setActiveOrder);
   const clearActiveOrder = useOrderStore((s) => s.clearActiveOrder);
 
-  const handleOrderPlaced = (orderId: string, eta: string) => {
-    // Attempt to parse eta into ms, default to 35 mins
-    const minsMatch = eta.match(/(\d+)/);
+  const handleOrderPlaced = ({
+    orderId,
+    eta,
+    restaurantName,
+  }: {
+    orderId: string;
+    eta: string;
+    restaurantName?: string;
+    total?: number;
+  }) => {
+    const minsMatch = eta?.match(/(\d+)/);
     const mins = minsMatch ? parseInt(minsMatch[1]) : 35;
     const estimatedDelivery = new Date(Date.now() + mins * 60000);
 
     setActiveOrder({
       orderId,
       estimatedDelivery,
-      restaurantName: "SnapOrder Delivery", // We don't easily have the restaurant name here unless queried from cart
+      // The agent reports which restaurant actually took the order.
+      restaurantName: restaurantName || "Your restaurant",
     });
     setChatOpen(false); // Close chat to show tracker clearly
   };

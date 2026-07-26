@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npm run *)",
+      "Bash(node -e \"console.log\\('SESSION_SECRET=' + require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(git stash *)",
+      "Bash(netstat -ano)",
+      "PowerShell(Stop-Process *)",
+      "Bash(curl -s -o /dev/null -w \"auth/session -> %{http_code}\\\\n\" http://localhost:3000/api/auth/session)",
+      "Bash(curl -s http://localhost:3000/api/auth/session)",
+      "Bash(curl -s \"http://localhost:3000/api/agent/track?orderId=TEST123\")",
+      "Bash(curl -sN -X POST http://localhost:3000/api/agent/chat -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(grep -o '\"type\":\"[a-z_]*\"\\\\|\"tool\":\"[a-z_]*\"\\\\|\"content\":\"[^\"]\\\\{0,180\\\\}')"
+    ]
+  }
+}

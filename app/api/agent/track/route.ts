@@ -1,10 +1,17 @@
 import { NextRequest } from "next/server";
 import { restaurantService } from "@/app/_services/restaurantService";
+import { stageFor } from "@/app/_lib/mockMcp";
 
-const isMockMode = process.env.NEXT_PUBLIC_MOCK_MODE === 'true' || process.env.RESTAURANT_DATA_PROVIDER !== 'swiggy';
+const isMockMode =
+  process.env.NEXT_PUBLIC_MOCK_MODE === "true" ||
+  process.env.RESTAURANT_DATA_PROVIDER !== "swiggy";
 
-// Global memory map to track mock polling cycles across requests (demo purposes only)
-const mockOrderCycles = new Map<string, number>();
+/**
+ * First time each order was polled. Stages derive from elapsed time rather than
+ * a poll counter, so the timeline is unaffected by poll interval, a refetch, or
+ * a reload mid-demo.
+ */
+const firstSeen = new Map<string, number>();
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,56 +19,36 @@ export async function GET(req: NextRequest) {
     const orderId = searchParams.get("orderId");
 
     if (!orderId) {
-      return Response.json({ success: false, error: "Missing orderId parameter" }, { status: 400 });
+      return Response.json(
+        { success: false, error: "Missing orderId parameter" },
+        { status: 400 }
+      );
     }
 
     if (isMockMode) {
-      // Simulate cycling through states every time this endpoint is polled
-      const cycle = mockOrderCycles.get(orderId) || 0;
-      mockOrderCycles.set(orderId, cycle + 1);
-
-      let status = "ACCEPTED";
-      let stage = 0;
-      let driverName = null;
-      let eta = "35 mins";
-
-      if (cycle >= 1 && cycle < 3) {
-        status = "PREPARING";
-        stage = 1;
-        eta = "25 mins";
-      } else if (cycle >= 3 && cycle < 5) {
-        status = "OUT_FOR_DELIVERY";
-        stage = 2;
-        driverName = "Ramesh Kumar";
-        eta = "10 mins";
-      } else if (cycle >= 5) {
-        status = "DELIVERED";
-        stage = 3;
-        driverName = "Ramesh Kumar";
-        eta = "Arrived";
+      let startedAt = firstSeen.get(orderId);
+      if (!startedAt) {
+        startedAt = Date.now();
+        firstSeen.set(orderId, startedAt);
       }
 
       return Response.json({
         success: true,
-        data: {
-          status,
-          stage,
-          driverName,
-          eta
-        }
+        data: stageFor(Date.now() - startedAt),
       });
     }
 
-    // Live mode using Swiggy MCP integration
     const trackingData = await restaurantService.trackOrder(orderId);
-    
-    return Response.json({
-      success: true,
-      data: trackingData // Assuming trackingData shape matches or mapping if needed
-    });
 
-  } catch (error: any) {
+    return Response.json({ success: true, data: trackingData });
+  } catch (error: unknown) {
     console.error("Tracking error:", error);
-    return Response.json({ success: false, error: error.message || "Internal Server Error" }, { status: 500 });
+    return Response.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
   }
 }

@@ -58,6 +58,8 @@ export interface AgentCart {
   restaurantName: string;
   items: AgentCartItem[];
   subtotal: number;
+  discount?: number;
+  appliedCoupon?: string | null;
 }
 
 export interface ToolCallEvent {

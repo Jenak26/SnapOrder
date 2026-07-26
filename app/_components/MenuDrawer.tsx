@@ -178,7 +178,7 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
     <>
       {/* Restaurant switch warning */}
       {isOpen && switchWarning && !isSwitchCheckDone && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
           <div className="glass-strong w-full max-w-md rounded-3xl p-6 shadow-2xl animate-scale-in">
             <h3 className="text-xl font-bold text-white">Clear current cart?</h3>
             <p className="mt-3 text-sm leading-6 text-muted">
@@ -209,7 +209,7 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
 
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
           shouldShowDrawer ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -217,7 +217,7 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
 
       {/* Drawer */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 flex h-[85vh] flex-col sm:left-auto sm:top-0 sm:h-full sm:w-[480px] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[85vh] flex-col sm:left-auto sm:top-0 sm:h-full sm:w-[480px] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           shouldShowDrawer
             ? "translate-y-0 sm:translate-x-0"
             : "translate-y-full sm:translate-y-0 sm:translate-x-full"

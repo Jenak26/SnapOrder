@@ -36,7 +36,7 @@ export default function PrivacyNotice() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-20 z-50 px-4 pb-3 sm:bottom-6 sm:px-6">
+    <div className="fixed inset-x-0 bottom-20 z-30 px-4 pb-3 sm:bottom-6 sm:px-6">
       <div className="mx-auto max-w-3xl animate-fade-up rounded-3xl border border-orange-400/30 bg-black/80 p-4 shadow-2xl shadow-orange-950/30 backdrop-blur-2xl sm:flex sm:items-center sm:gap-4 sm:p-5">
         <p className="text-sm leading-relaxed text-white/78">
           SnapOrder uses Swiggy&apos;s platform to find restaurants and place

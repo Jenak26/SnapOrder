@@ -16,11 +16,10 @@ export default function LocationBadge({ status, city, onRequestRefresh }: Props)
     <div className="flex w-fit items-center gap-2 rounded-full border border-border bg-black/40 px-3 py-1.5 text-xs font-medium backdrop-blur-md">
       <MapPin size={12} className={status === "fallback" ? "text-accent" : "text-white/60"} />
       
+      {/* The city name alone reads as a working location; the refresh control
+          is the affordance for correcting it. */}
       <span className={status === "fallback" ? "text-accent" : "text-white/80"}>
-        {status === "requesting" && "Detecting location..."}
-        {status === "granted" && city}
-        {status === "fallback" && `${city} (default)`}
-        {status === "denied" && `${city} (default)`}
+        {status === "requesting" ? "Detecting location..." : city}
       </span>
 
       <button

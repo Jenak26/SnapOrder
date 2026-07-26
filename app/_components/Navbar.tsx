@@ -75,7 +75,8 @@ export default function Navbar() {
           <button
             id="navbar-cart"
             onClick={toggleSidebar}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-muted transition-colors hover:bg-white/8 hover:text-foreground"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/5 text-muted transition-colors hover:border-white/20 hover:bg-white/10 hover:text-foreground"
+            aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`}
           >
             <ShoppingCart size={18} />
             {count > 0 && (

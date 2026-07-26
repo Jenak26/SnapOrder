@@ -31,9 +31,10 @@ export default function OrderTracker({ orderId, estimatedDelivery, restaurantNam
   const itemCount = useCartStore((s) => s.itemCount());
   const bottomPosition = itemCount > 0 ? "bottom-24 md:bottom-6" : "bottom-6";
 
-  // Poll every 20 seconds
+  // Stages advance on an elapsed-time basis server-side; poll often enough that
+  // the timeline animates rather than jumping.
   const { data } = useSWR(`/api/agent/track?orderId=${orderId}`, fetcher, {
-    refreshInterval: 20000,
+    refreshInterval: 4000,
   });
 
   const trackingData = data?.data || {};
@@ -92,7 +93,7 @@ export default function OrderTracker({ orderId, estimatedDelivery, restaurantNam
     return (
       <div 
         onClick={() => setIsExpanded(true)}
-        className={`fixed left-1/2 z-50 flex -translate-x-1/2 cursor-pointer items-center gap-3 rounded-full border border-white/10 bg-black/85 px-5 py-3 shadow-2xl backdrop-blur-xl transition-all hover:scale-105 active:scale-95 animate-fade-up ${bottomPosition}`}
+        className={`fixed left-1/2 z-40 flex -translate-x-1/2 cursor-pointer items-center gap-3 rounded-full border border-white/10 bg-black/85 px-5 py-3 shadow-2xl backdrop-blur-xl transition-all hover:scale-105 active:scale-95 animate-fade-up ${bottomPosition}`}
       >
         <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-accent glow-orange">
           <Bike size={16} />
@@ -111,7 +112,7 @@ export default function OrderTracker({ orderId, estimatedDelivery, restaurantNam
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center animate-in fade-in duration-300">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsExpanded(false)} />
 

@@ -101,14 +101,18 @@ export default function SwiggyConnectButton() {
         </div>
       )}
 
+      {/*
+        Deliberately a ghost control, not a filled CTA. This is a connection
+        *status* affordance; "Order Now" is the page's single primary action.
+      */}
       {!isConnected && (
         <button
           type="button"
           onClick={connect}
-          className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] hover:shadow-orange-500/30 sm:flex"
+          className="hidden items-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:border-orange-400/40 hover:bg-white/10 hover:text-foreground sm:flex"
         >
           <LinkIcon size={15} />
-          Connect Swiggy Account
+          Connect Swiggy
         </button>
       )}
 

@@ -29,8 +29,10 @@ export default function CartSidebar() {
   const setActiveOrder = useOrderStore((s) => s.setActiveOrder);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  const appliedCoupon = useCartStore((s) => s.appliedCoupon);
+
   const count = itemCount();
-  const { subtotal, tax, deliveryFee, grandTotal } = totals();
+  const { subtotal, tax, deliveryFee, discount, grandTotal } = totals();
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -55,7 +57,7 @@ export default function CartSidebar() {
       {/* Backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -63,7 +65,7 @@ export default function CartSidebar() {
       {/* Sidebar panel */}
       <div
         id="cart-sidebar"
-        className={`fixed top-0 right-0 z-50 h-full w-full max-w-md transition-transform duration-500 ease-out ${
+        className={`fixed top-0 right-0 z-[60] h-full w-full max-w-md transition-transform duration-500 ease-out ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -197,10 +199,24 @@ export default function CartSidebar() {
                     Free delivery on orders ₹500+
                   </p>
                 )}
+                {discount > 0 && (
+                  <div className="flex justify-between font-medium text-success">
+                    <span className="flex items-center gap-1.5">
+                      <Tag size={12} />
+                      {appliedCoupon ? `Coupon ${appliedCoupon}` : "Discount"}
+                    </span>
+                    <span>−₹{discount}</span>
+                  </div>
+                )}
                 <div className="border-t border-border pt-2 flex justify-between text-base font-bold text-foreground">
                   <span>Total</span>
                   <span>₹{grandTotal}</span>
                 </div>
+                {discount > 0 && (
+                  <p className="text-[11px] font-medium text-success">
+                    You saved ₹{discount} on this order
+                  </p>
+                )}
               </div>
 
               <SwiggyAttribution variant="footer" />
