@@ -41,7 +41,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-screen bg-background text-foreground">
+      {/* Browser extensions inject attributes into <body> before hydration,
+          which React would otherwise report as a mismatch. */}
+      <body
+        className="min-h-screen bg-background text-foreground"
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>
