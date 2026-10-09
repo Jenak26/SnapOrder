@@ -3,19 +3,18 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import {
-  Upload,
-  ImagePlus,
   X,
-  Loader2,
   Camera,
   AlertCircle,
-  CheckCircle2,
+  Check,
   Image as ImageIcon,
+  ArrowRight,
 } from "lucide-react";
 import Image from "next/image";
 import type { MatchResult, AnalyzeImageResult, AnalyzeResult } from "@/app/_lib/types";
 import { useGeolocation } from "@/app/_hooks/useGeolocation";
 import LocationBadge from "./LocationBadge";
+import SectionHead from "./SectionHead";
 
 // ── Constants ────────────────────────────────────────────
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -24,15 +23,21 @@ const ACCEPTED_TYPES = { "image/*": [".jpg", ".jpeg", ".png", ".webp"] };
 type UploadStatus = "idle" | "previewing" | "analyzing" | "success" | "error" | "compressing";
 
 const LOADING_STEPS = [
-  "Scanning your food photo...",
-  "Detecting dish and cuisine...",
-  "Finding best nearby restaurants...",
-  "Optimizing delivery options...",
+  "Reading the photograph",
+  "Naming the dish and cuisine",
+  "Searching kitchens near you",
+  "Ranking by match and distance",
+];
+
+const INSTRUCTIONS = [
+  "Choose a clear food photo from your gallery, or take a new one.",
+  "We identify the dish and find similar food near you.",
+  "Compare your matches and choose what you want to order.",
 ];
 
 // ── Compression Helper ───────────────────────────────────
 async function compressImage(file: File, maxWidth = 1600): Promise<File> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = (event) => {
@@ -54,7 +59,7 @@ async function compressImage(file: File, maxWidth = 1600): Promise<File> {
         if (!ctx) return resolve(file);
 
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         // Output as high quality WebP
         canvas.toBlob(
           (blob) => {
@@ -92,16 +97,23 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  // Detect mobile (touch device with narrow viewport)
+  // Detect a genuinely touch-first device.
+  //
+  // The old test was `"ontouchstart" in window || maxTouchPoints > 0`, which is
+  // true on any touchscreen laptop · so desktops with a touch panel got the
+  // camera buttons and never saw the drop zone at all. `pointer: coarse`
+  // describes the *primary* pointer, which is the actual question, and the
+  // width bound keeps a large tablet in the desktop layout it has room for.
   useEffect(() => {
-    const check = () => {
-      setIsMobile(
-        "ontouchstart" in window || navigator.maxTouchPoints > 0
-      );
-    };
+    const mq = window.matchMedia("(pointer: coarse)");
+    const check = () => setIsMobile(mq.matches && window.innerWidth < 1024);
     check();
+    mq.addEventListener("change", check);
     window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    return () => {
+      mq.removeEventListener("change", check);
+      window.removeEventListener("resize", check);
+    };
   }, []);
 
   // Clean up object URLs
@@ -115,9 +127,7 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
   const handleFile = useCallback(
     async (incoming: File) => {
       // Type guard
-      if (
-        !["image/jpeg", "image/png", "image/webp"].includes(incoming.type)
-      ) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(incoming.type)) {
         setError("Unsupported file type. Please use JPG, PNG, or WebP.");
         return;
       }
@@ -129,7 +139,7 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
 
       try {
         const compressedFile = await compressImage(incoming);
-        
+
         // Size guard after compression
         if (compressedFile.size > MAX_SIZE) {
           setError(
@@ -178,7 +188,7 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
     maxFiles: 1,
     multiple: false,
     maxSize: MAX_SIZE,
-    noClick: status === "analyzing" || status === "compressing" || isMobile, // Disable standard click on mobile
+    noClick: status === "analyzing" || status === "compressing" || isMobile,
   });
 
   // ── Camera capture (mobile) ────────────────────────────
@@ -186,8 +196,6 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
     const captured = e.target.files?.[0];
     if (captured) {
       await handleFile(captured);
-      // Let the previewing effect settle, but don't auto-analyze here anymore 
-      // as it might be confusing if they didn't like the photo.
     }
     e.target.value = "";
   };
@@ -231,7 +239,7 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
 
       // Fast forward to last step before resolving to success for smooth UX
       setLoadingStep(LOADING_STEPS.length - 1);
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       setStatus("success");
       onAnalysis?.(data.analysis);
@@ -241,7 +249,6 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
       setTimeout(() => {
         document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" });
       }, 800);
-
     } catch {
       clearInterval(stepInterval);
       setError("Network error. Please check your connection and try again.");
@@ -258,282 +265,390 @@ export default function UploadCard({ onResults, onAnalysis }: Props) {
     setError(null);
   };
 
+  const isBusy = status === "analyzing" || status === "compressing";
+
   return (
-    <section id="upload" className="relative py-24 sm:py-36">
-      {/* Background accent */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
-      </div>
+    <section id="upload" className="relative px-5 py-24 sm:py-32 lg:px-10">
+      <div className="mx-auto max-w-[1400px]">
+        <SectionHead
+          index="01"
+          eyebrow="Start here"
+          title={
+            <>
+              What are you <span className="display-em">craving?</span>
+            </>
+          }
+          aside={
+            <LocationBadge
+              status={geoStatus}
+              city={city}
+              onRequestRefresh={() => requestLocation(true)}
+            />
+          }
+        />
 
-      <div className="relative z-10 mx-auto max-w-3xl px-5 lg:px-8">
-        {/* Section header */}
-        <div className="mb-12 text-center flex flex-col items-center">
-          <LocationBadge 
-            status={geoStatus} 
-            city={city} 
-            onRequestRefresh={() => requestLocation(true)} 
-          />
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Upload Your{" "}
-            <span className="text-accent">Food Photo</span>
-          </h2>
-          <p className="mt-3 text-base text-muted">
-            Our AI analyzes your photo and finds the closest matching dish
-            instantly
-          </p>
-        </div>
-
-        {/* Upload zone */}
-        <div className="glass rounded-3xl p-3 shadow-2xl shadow-accent/20 transition-transform duration-500 hover:scale-[1.015] hover:shadow-accent/30">
-          <div
-            {...getRootProps()}
-            id="upload-dropzone"
-            className={`upload-zone relative flex min-h-[340px] cursor-pointer flex-col items-center justify-center rounded-2xl transition-all ${
-              isDragActive ? "active" : ""
-            } ${preview ? "p-0" : "p-12 sm:p-14"}`}
-          >
-            <input {...getInputProps()} id="upload-input" />
-
-            {preview ? (
-              /* ── Preview state ── */
-              <div className="relative w-full overflow-hidden rounded-2xl">
-                <Image
-                  src={preview}
-                  alt="Uploaded food"
-                  width={800}
-                  height={500}
-                  className="h-auto w-full object-cover"
-                  unoptimized
-                />
-
-                {/* Processing overlays */}
-                {(status === "analyzing" || status === "compressing") && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-20">
-                    <div className="glass rounded-3xl p-8 flex flex-col items-center max-w-[280px] w-11/12 animate-fade-up text-center shadow-2xl">
-                      <Loader2
-                        size={40}
-                        className="animate-spin text-accent mb-6"
-                      />
-                      <div className="relative h-6 w-full overflow-hidden mb-5">
-                        {LOADING_STEPS.map((step, idx) => (
-                          <p
-                            key={step}
-                            className={`absolute inset-0 text-sm font-medium text-white transition-all duration-500 ease-in-out ${
-                              status === "compressing"
-                                ? (idx === 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")
-                                : loadingStep === idx
-                                ? "opacity-100 translate-y-0"
-                                : loadingStep > idx
-                                ? "opacity-0 -translate-y-4"
-                                : "opacity-0 translate-y-4"
-                            }`}
-                          >
-                            {status === "compressing" ? "Optimizing image..." : step}
-                          </p>
-                        ))}
-                      </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className="h-full bg-gradient-to-r from-accent via-amber-400 to-accent transition-all duration-700 ease-out"
-                          style={{
-                            width: status === "compressing"
-                              ? "15%"
-                              : `${Math.max(15, ((loadingStep + 1) / LOADING_STEPS.length) * 100)}%`
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Success overlay */}
-                {status === "success" && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 animate-fade-up z-20">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500 text-white shadow-lg shadow-green-500/20">
-                        <CheckCircle2 size={18} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          We found your perfect match
-                        </p>
-                        <p className="text-xs text-white/60">
-                          Scrolling to recommendations...
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error overlay */}
-                {status === "error" && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 text-white">
-                        <AlertCircle size={18} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          Analysis Failed
-                        </p>
-                        <p className="text-xs text-white/60">
-                          {error ?? "Something went wrong"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Previewing overlay */}
-                {status === "previewing" && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500 text-white">
-                        <ImagePlus size={18} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          Photo Ready!
-                        </p>
-                        <p className="text-xs text-white/60">
-                          Click &quot;Find Matches&quot; or drop another photo
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Clear button (always visible unless processing) */}
-                {status !== "analyzing" && status !== "compressing" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      clearAll();
-                    }}
-                    id="upload-clear"
-                    className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-red-500 active:scale-95"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            ) : isMobile ? (
-              /* ── Mobile Action State ── */
-              <div className="flex w-full flex-col gap-4 p-5 sm:p-0">
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  capture="environment"
-                  onChange={handleCameraCapture}
-                  className="hidden"
-                  id="camera-input"
-                />
-                <input
-                  ref={galleryInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleCameraCapture}
-                  className="hidden"
-                  id="gallery-input"
-                />
-                
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    cameraInputRef.current?.click();
-                  }}
-                  className="flex w-full items-center justify-center gap-3 rounded-3xl bg-accent px-8 py-6 text-lg font-bold text-white shadow-xl shadow-accent/20 transition-all active:scale-[0.98]"
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* ── Instructions: a numbered ticket ─────────────── */}
+          <aside data-reveal className="lg:col-span-4">
+            <ol className="border-t border-rule">
+              {INSTRUCTIONS.map((text, i) => (
+                <li
+                  key={text}
+                  className="flex gap-5 border-b border-rule py-5"
                 >
-                  <Camera size={24} />
-                  Take Photo
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    galleryInputRef.current?.click();
-                  }}
-                  className="flex w-full items-center justify-center gap-3 rounded-3xl border-2 border-border bg-surface px-8 py-6 text-lg font-bold text-foreground transition-all active:scale-[0.98]"
-                >
-                  <ImageIcon size={24} />
-                  Upload from Gallery
-                </button>
-              </div>
-            ) : (
-              /* ── Desktop Drag Drop State ── */
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-                  <Upload size={28} />
-                </div>
-                <p className="text-lg font-semibold text-foreground">
-                  {isDragActive
-                    ? "Drop your food photo here"
-                    : "Drag & drop a food photo"}
-                </p>
-                <p className="mt-2 text-sm text-muted">
-                  or{" "}
-                  <span className="font-medium text-accent underline underline-offset-2">
-                    browse files
+                  <span className="numeral shrink-0 text-[26px] leading-none text-chilli">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                </p>
-                <p className="mt-4 text-xs text-muted/60">
-                  Supports JPG, PNG, WebP • Max 10 MB
-                </p>
+                  <p className="text-[14px] leading-relaxed text-ink-2">{text}</p>
+                </li>
+              ))}
+            </ol>
+
+            <p className="label mt-6 leading-[1.8]">
+              JPG · PNG · WEBP · max 10 MB
+              <br />
+              Compressed in your browser. Never stored.
+            </p>
+
+            {/* Mobile-only location badge; on desktop it rides the section rule. */}
+            <div className="mt-6 sm:hidden">
+              <LocationBadge
+                status={geoStatus}
+                city={city}
+                onRequestRefresh={() => requestLocation(true)}
+              />
+            </div>
+          </aside>
+
+          {/* ── The sheet ───────────────────────────────────── */}
+          <div data-reveal className="lg:col-span-8">
+            <div className="relative bg-card p-3 shadow-[0_24px_60px_-30px_rgba(22,18,14,0.5)]">
+
+
+              <div
+                {...getRootProps()}
+                id="upload-dropzone"
+                className={`relative flex min-h-[300px] cursor-pointer flex-col items-center justify-center overflow-hidden ${
+                  preview ? "p-0" : "dropzone"
+                } ${isDragActive ? "active" : ""}`}
+              >
+                <input {...getInputProps()} id="upload-input" />
+
+                {preview ? (
+                  /* ── Preview state ── */
+                  <div className="relative w-full">
+                    <Image
+                      src={preview}
+                      alt="Uploaded food"
+                      width={900}
+                      height={560}
+                      className="photo-warm h-auto max-h-[560px] w-full object-cover"
+                      unoptimized
+                    />
+
+                    {/* Processing: a kitchen ticket printing itself, line by
+                        line. A spinner tells you nothing; this tells you which
+                        stage of the pipeline is running. */}
+                    {isBusy && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-ink/72 p-6 backdrop-blur-[3px]">
+                        <div className="animate-sheet-up w-full max-w-[340px] bg-card p-6">
+                          <div className="flex items-center justify-between">
+                            <span className="label label-chilli">
+                              {status === "compressing"
+                                ? "Optimising"
+                                : "Analysing"}
+                            </span>
+                            <span className="mono text-[10px] text-ink-3">
+                              {status === "compressing"
+                                ? "00 / 04"
+                                : `${String(loadingStep + 1).padStart(2, "0")} / 04`}
+                            </span>
+                          </div>
+
+                          <div className="perf my-4" />
+
+                          <ol className="space-y-3">
+                            {LOADING_STEPS.map((step, idx) => {
+                              const done =
+                                status !== "compressing" && loadingStep > idx;
+                              const active =
+                                status !== "compressing" && loadingStep === idx;
+                              return (
+                                <li
+                                  key={step}
+                                  className="flex items-center gap-3"
+                                >
+                                  <span
+                                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ${
+                                      done
+                                        ? "border-cardamom bg-cardamom text-card"
+                                        : active
+                                        ? "border-chilli bg-chilli/10"
+                                        : "border-rule"
+                                    }`}
+                                  >
+                                    {done ? (
+                                      <Check size={9} strokeWidth={3.5} />
+                                    ) : active ? (
+                                      <span className="h-1.5 w-1.5 rounded-full bg-chilli animate-blink" />
+                                    ) : null}
+                                  </span>
+                                  <span
+                                    className={`mono text-[11px] transition-colors duration-300 ${
+                                      done
+                                        ? "text-ink-3 line-through"
+                                        : active
+                                        ? "text-ink"
+                                        : "text-ink-3/60"
+                                    }`}
+                                  >
+                                    {step}
+                                  </span>
+                                </li>
+                              );
+                            })}
+                          </ol>
+
+                          <div className="mt-5 h-[3px] w-full bg-paper-2">
+                            <div
+                              className="h-full bg-chilli transition-[width] duration-700 ease-out"
+                              style={{
+                                width:
+                                  status === "compressing"
+                                    ? "12%"
+                                    : `${Math.max(
+                                        12,
+                                        ((loadingStep + 1) / LOADING_STEPS.length) * 100
+                                      )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status footers */}
+                    {status === "success" && (
+                      <StatusBar
+                        tone="good"
+                        title="Match found"
+                        detail="Taking you to the results…"
+                      />
+                    )}
+                    {status === "error" && (
+                      <StatusBar
+                        tone="bad"
+                        title="Analysis failed"
+                        detail={error ?? "Something went wrong"}
+                      />
+                    )}
+                    {status === "previewing" && (
+                      <StatusBar
+                        tone="neutral"
+                        title="Photo ready"
+                        detail="Find the matches, or drop another photo"
+                      />
+                    )}
+
+                    {!isBusy && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearAll();
+                        }}
+                        id="upload-clear"
+                        className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-card text-ink shadow-md transition-colors hover:bg-chilli hover:text-card"
+                        aria-label="Remove photo"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                ) : isMobile ? (
+                  /* ── Mobile Action State ── */
+                  <div className="flex w-full flex-col gap-3 p-6">
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      capture="environment"
+                      onChange={handleCameraCapture}
+                      className="hidden"
+                      id="camera-input"
+                    />
+                    <input
+                      ref={galleryInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleCameraCapture}
+                      className="hidden"
+                      id="gallery-input"
+                    />
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        cameraInputRef.current?.click();
+                      }}
+                      className="btn-press flex w-full items-center justify-center gap-3 rounded-full bg-chilli px-8 py-5 text-base font-semibold text-card"
+                    >
+                      <Camera size={20} strokeWidth={1.9} />
+                      Take a photo
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        galleryInputRef.current?.click();
+                      }}
+                      className="btn-press flex w-full items-center justify-center gap-3 rounded-full border border-ink bg-card px-8 py-5 text-base font-semibold text-ink"
+                    >
+                      <ImageIcon size={20} strokeWidth={1.9} />
+                      Choose from gallery
+                    </button>
+                  </div>
+                ) : (
+                  /* ── Desktop Drag Drop State ── */
+                  <div className="flex flex-col items-center justify-center px-8 py-12 text-center">
+                    <PlateGlyph active={isDragActive} />
+                    <p className="serif mt-7 text-[28px] leading-tight text-ink">
+                      {isDragActive
+                        ? "Drop it right here"
+                        : "Drop your food photo here"}
+                    </p>
+                    <p className="mt-3 text-[14px] text-ink-2">
+                      or{" "}
+                      <span className="font-semibold text-chilli underline underline-offset-4">
+                        browse your files
+                      </span>
+                    </p>
+                    <p className="label mt-8">
+                      JPG · PNG · WEBP · up to 10 MB
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Error banner ── */}
+            {error && status !== "error" && (
+              <div className="animate-rise mt-4 flex items-center gap-3 border-l-2 border-danger bg-chilli-tint px-5 py-3.5">
+                <AlertCircle size={15} className="shrink-0 text-danger" />
+                <p className="text-[13px] text-danger">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-danger/70 transition-colors hover:text-danger"
+                  aria-label="Dismiss"
+                >
+                  <X size={14} />
+                </button>
               </div>
             )}
+
+            {/* ── Action ── */}
+            {(status === "previewing" || status === "error") && (
+              <button
+                id="upload-find-matches"
+                onClick={(e) => {
+                  e.preventDefault();
+                  analyzeImage();
+                }}
+                className="btn-press animate-rise group mt-6 flex w-full items-center justify-center gap-3 rounded-full bg-chilli px-8 py-4.5 text-[15px] font-semibold text-card hover:bg-chilli-2 sm:w-auto"
+              >
+                {status === "error" ? "Try that again" : "Find matching dishes"}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </button>
+            )}
+
+            {status === "success" && (
+              <button
+                id="upload-new"
+                onClick={(e) => {
+                  e.preventDefault();
+                  clearAll();
+                }}
+                className="btn-press animate-rise mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-ink bg-card px-8 py-4 text-[15px] font-semibold text-ink sm:w-auto"
+              >
+                Upload another photo
+              </button>
+            )}
           </div>
-        </div>
-
-        {/* ── Error banner ── */}
-        {error && status !== "error" && (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-3 animate-fade-up">
-            <AlertCircle size={16} className="shrink-0 text-red-400" />
-            <p className="text-sm text-red-300">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-red-400 hover:text-red-300"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {/* ── Action buttons ── */}
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          {/* Find Matches (visible in previewing or error state) */}
-          {(status === "previewing" || status === "error") && (
-            <button
-              id="upload-find-matches"
-              onClick={(e) => {
-                e.preventDefault();
-                analyzeImage();
-              }}
-              className="group flex w-full items-center justify-center gap-2.5 rounded-2xl bg-accent px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-accent-hover hover:shadow-xl hover:shadow-accent/25 active:scale-[0.97] sm:w-auto animate-fade-up"
-            >
-              {status === "error" ? "Retry Analysis" : "Find Matching Dishes"}
-              <ImagePlus
-                size={16}
-                className="transition-transform group-hover:scale-110"
-              />
-            </button>
-          )}
-
-          {/* Upload new photo (visible in success state) */}
-          {status === "success" && (
-            <button
-              id="upload-new"
-              onClick={(e) => {
-                e.preventDefault();
-                clearAll();
-              }}
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl border border-border px-8 py-4 text-base font-medium text-muted transition-all duration-300 hover:border-accent/40 hover:text-foreground active:scale-[0.97] sm:w-auto animate-fade-up"
-            >
-              Upload Another Photo
-            </button>
-          )}
         </div>
       </div>
     </section>
   );
 }
+
+/** Footer strip over the preview image. */
+function StatusBar({
+  tone,
+  title,
+  detail,
+}: {
+  tone: "good" | "bad" | "neutral";
+  title: string;
+  detail: string;
+}) {
+  const accent =
+    tone === "good"
+      ? "bg-cardamom"
+      : tone === "bad"
+      ? "bg-danger"
+      : "bg-turmeric";
+
+  return (
+    <div className="animate-rise absolute inset-x-0 bottom-0 z-20 flex items-stretch">
+      <span className={`w-1.5 shrink-0 ${accent}`} />
+      <div className="flex-1 bg-card/95 px-5 py-3.5 backdrop-blur-sm">
+        <p className="label label-ink">{title}</p>
+        <p className="mt-1 text-[13px] text-ink-2">{detail}</p>
+      </div>
+    </div>
+  );
+}
+
+/** An empty plate with a dashed shutter ring · the drop target, drawn. */
+function PlateGlyph({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="76"
+      height="76"
+      viewBox="0 0 76 76"
+      fill="none"
+      aria-hidden
+      className={`transition-transform duration-500 ${
+        active ? "scale-110 rotate-12" : ""
+      }`}
+    >
+      <circle
+        cx="38"
+        cy="38"
+        r="35"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeDasharray="5 6"
+        className={active ? "text-chilli" : "text-ink/30"}
+      />
+      <circle
+        cx="38"
+        cy="38"
+        r="23"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        className={active ? "text-chilli" : "text-ink/25"}
+      />
+      <path
+        d="M38 27v22M27 38h22"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        className={active ? "text-chilli" : "text-ink/45"}
+      />
+    </svg>
+  );
+}
+
+

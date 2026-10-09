@@ -24,6 +24,8 @@ export const useOrderStore = create<OrderState>()(
     }),
     {
       name: "snaporder-active-order",
+      // Rehydrated in <StoreHydration /> after mount (see cartStore).
+      skipHydration: true,
       // Since Dates are lost in JSON serialization, we need to revive them
       partialize: (state) => ({ activeOrder: state.activeOrder }),
       onRehydrateStorage: () => (state) => {

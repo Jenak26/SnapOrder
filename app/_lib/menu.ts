@@ -83,7 +83,7 @@ export function generateFallbackRestaurant(restaurantId: string): Restaurant {
     cuisine: "House Specials",
     rating: 4.5,
     reviews: "500",
-    distance: "1.0 mi",
+    distance: "1.0 km",
     deliveryTime: "25 min",
     priceRange: "₹₹",
     image: "/food-pizza.png",

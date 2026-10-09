@@ -8,7 +8,7 @@ import DemoPreview from "./_components/DemoPreview";
 import RestaurantCards from "./_components/RestaurantCards";
 import StickyCart from "./_components/StickyCart";
 import CartSidebar from "./_components/CartSidebar";
-import Features from "./_components/Features";
+import Method from "./_components/Method";
 import Footer from "./_components/Footer";
 import ChatToggleButton from "./_components/ChatToggleButton";
 import ChatPanel from "./_components/ChatPanel";
@@ -26,24 +26,34 @@ export default function Home() {
   const setActiveOrder = useOrderStore((s) => s.setActiveOrder);
   const clearActiveOrder = useOrderStore((s) => s.clearActiveOrder);
 
-  const handleOrderPlaced = (orderId: string, eta: string) => {
-    // Attempt to parse eta into ms, default to 35 mins
-    const minsMatch = eta.match(/(\d+)/);
+  const handleOrderPlaced = ({
+    orderId,
+    eta,
+    restaurantName,
+  }: {
+    orderId: string;
+    eta: string;
+    restaurantName?: string;
+    total?: number;
+  }) => {
+    const minsMatch = eta?.match(/(\d+)/);
     const mins = minsMatch ? parseInt(minsMatch[1]) : 35;
     const estimatedDelivery = new Date(Date.now() + mins * 60000);
 
     setActiveOrder({
       orderId,
       estimatedDelivery,
-      restaurantName: "SnapOrder Delivery", // We don't easily have the restaurant name here unless queried from cart
+      // The agent reports which restaurant actually took the order.
+      restaurantName: restaurantName || "Your restaurant",
     });
     setChatOpen(false); // Close chat to show tracker clearly
   };
 
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <Navbar />
-      <main>
+      <main id="main-content">
         <Hero />
         <UploadCard
           onResults={setMatchResults}
@@ -51,7 +61,7 @@ export default function Home() {
         />
         <DemoPreview results={matchResults} analysis={analysis} />
         <RestaurantCards analysis={analysis} />
-        <Features />
+        <Method />
       </main>
       <Footer />
       <StickyCart />
@@ -82,3 +92,4 @@ export default function Home() {
     </>
   );
 }
+

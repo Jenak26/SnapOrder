@@ -1,34 +1,42 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import Wordmark from "./_components/Wordmark";
 
 export default function NotFound() {
-  const router = useRouter();
-
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-10 text-foreground">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/3 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-accent/10 blur-[110px]" />
-      </div>
+    <main className="flex min-h-screen flex-col px-5 py-10 lg:px-10">
+      <Link href="/" className="group w-fit">
+        <Wordmark />
+      </Link>
 
-      <section className="glass-strong relative z-10 w-full max-w-lg rounded-3xl p-8 text-center shadow-2xl shadow-black/40">
-        <p className="bg-gradient-to-r from-orange-300 via-accent to-orange-500 bg-clip-text text-7xl font-black tracking-tight text-transparent sm:text-8xl">
-          404
-        </p>
-        <h1 className="mt-5 text-2xl font-bold text-white">Page not found</h1>
-        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted">
-          This route is not on the SnapOrder menu.
-        </p>
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
-        >
-          <ArrowLeft size={16} />
-          Go back to SnapOrder
-        </button>
-      </section>
+      <div className="flex flex-1 items-center">
+        <div className="w-full max-w-2xl">
+          <div className="flex items-center gap-4">
+            <span className="mono text-[11px] text-chilli">404</span>
+            <span className="label">Not on the menu</span>
+            <span className="rule-h" />
+          </div>
+
+          <h1 className="display mt-7 text-[3.5rem] leading-[0.88] sm:text-[6rem]">
+            We don&apos;t
+            <br />
+            serve <span className="display-em">that.</span>
+          </h1>
+
+          <p className="mt-7 max-w-md text-[15px] leading-relaxed text-ink-2">
+            This page isn&apos;t on the menu — it may have been moved, or it
+            never existed. The kitchen is still open, though.
+          </p>
+
+          <Link
+            href="/"
+            className="btn-press mt-10 inline-flex items-center gap-2.5 rounded-full bg-chilli px-7 py-3.5 text-[15px] font-semibold text-card hover:bg-chilli-2"
+          >
+            <ArrowLeft size={16} />
+            Back to SnapOrder
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }

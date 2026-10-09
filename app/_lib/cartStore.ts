@@ -21,6 +21,7 @@ export interface CartTotals {
   subtotal: number;
   tax: number;
   deliveryFee: number;
+  discount: number;
   grandTotal: number;
 }
 
@@ -46,6 +47,9 @@ export function parsePrice(raw: string): number {
 interface CartState {
   items: CartItem[];
   sidebarOpen: boolean;
+  /** Coupon applied by the agent via apply_food_coupon. */
+  discount: number;
+  appliedCoupon: string | null;
 
   // Actions
   addItem: (
@@ -70,6 +74,8 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       sidebarOpen: false,
+      discount: 0,
+      appliedCoupon: null,
 
       addItem: (incoming) => {
         const id = makeId(incoming.name, incoming.restaurant);
@@ -116,7 +122,7 @@ export const useCartStore = create<CartState>()(
             .filter((i) => i.qty > 0),
         })),
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], discount: 0, appliedCoupon: null }),
 
       syncFromAgent: (cart) => {
         set({
@@ -129,6 +135,8 @@ export const useCartStore = create<CartState>()(
             price: i.price,
             qty: i.quantity,
           })),
+          discount: cart.discount ?? 0,
+          appliedCoupon: cart.appliedCoupon ?? null,
         });
       },
 
@@ -149,18 +157,27 @@ export const useCartStore = create<CartState>()(
             : subtotal >= FREE_DELIVERY_THRESHOLD
               ? 0
               : DELIVERY_FEE;
+        const discount = Math.min(get().discount, subtotal);
         return {
           subtotal,
           tax,
           deliveryFee,
-          grandTotal: subtotal + tax + deliveryFee,
+          discount,
+          grandTotal: Math.max(0, subtotal + tax + deliveryFee - discount),
         };
       },
     }),
     {
       name: "snaporder-cart",
+      // Rehydrated in <StoreHydration /> after mount so the first client
+      // render matches the server's empty cart.
+      skipHydration: true,
       // Only persist `items` — sidebar state is ephemeral
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({
+        items: state.items,
+        discount: state.discount,
+        appliedCoupon: state.appliedCoupon,
+      }),
     }
   )
 );

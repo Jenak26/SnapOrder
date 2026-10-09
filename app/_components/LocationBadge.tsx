@@ -12,22 +12,32 @@ interface Props {
 export default function LocationBadge({ status, city, onRequestRefresh }: Props) {
   if (status === "idle") return null;
 
+  const approximate = status === "fallback";
+
   return (
-    <div className="flex w-fit items-center gap-2 rounded-full border border-border bg-black/40 px-3 py-1.5 text-xs font-medium backdrop-blur-md">
-      <MapPin size={12} className={status === "fallback" ? "text-accent" : "text-white/60"} />
-      
-      <span className={status === "fallback" ? "text-accent" : "text-white/80"}>
-        {status === "requesting" && "Detecting location..."}
-        {status === "granted" && city}
-        {status === "fallback" && `${city} (default)`}
-        {status === "denied" && `${city} (default)`}
+    <div className="flex w-fit items-center gap-2 rounded-full border border-rule bg-card py-1.5 pl-3 pr-1.5">
+      <MapPin
+        size={12}
+        strokeWidth={2}
+        className={approximate ? "text-turmeric" : "text-chilli"}
+      />
+
+      {/* The city name alone reads as a working location; the refresh control
+          is the affordance for correcting it. */}
+      <span className="mono text-[11px] font-medium text-ink">
+        {status === "requesting" ? "Locating…" : city}
       </span>
 
+      {approximate && <span className="label text-[9px]">approx</span>}
+
+      {/* The visible dot stays small to keep the badge quiet, but the hit area
+          is padded out to a real tap target on touch. */}
       <button
         onClick={() => onRequestRefresh()}
         disabled={status === "requesting"}
-        className="ml-1 rounded-full p-0.5 text-white/40 transition-colors hover:text-white disabled:opacity-50 disabled:animate-spin"
-        title="Refresh Location"
+        className="-my-2 -mr-1.5 flex h-10 w-10 items-center justify-center rounded-full text-ink-3 transition-colors hover:text-ink disabled:animate-spin-slow disabled:opacity-60 sm:-my-1 sm:h-7 sm:w-7"
+        title="Refresh location"
+        aria-label="Refresh location"
       >
         <RefreshCw size={12} />
       </button>

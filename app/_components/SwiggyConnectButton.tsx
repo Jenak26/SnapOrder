@@ -58,7 +58,7 @@ export default function SwiggyConnectButton() {
     let nextToast: { type: "success" | "error"; message: string } | null = null;
 
     if (auth === "success") {
-      nextToast = { type: "success", message: "Swiggy account connected!" };
+      nextToast = { type: "success", message: "Swiggy account connected." };
       mutate();
     } else if (auth === "error") {
       nextToast = {
@@ -91,24 +91,28 @@ export default function SwiggyConnectButton() {
     <div className="relative">
       {toast && (
         <div
-          className={`absolute right-0 top-12 z-50 w-72 rounded-2xl border px-4 py-3 text-sm font-medium shadow-2xl backdrop-blur-xl ${
+          className={`animate-rise absolute right-0 top-12 z-50 w-72 border-l-2 px-4 py-3 text-[13px] font-medium shadow-[0_16px_40px_-16px_rgba(22,18,14,0.6)] ${
             toast.type === "success"
-              ? "border-success/30 bg-success/15 text-success"
-              : "border-danger/30 bg-danger/15 text-red-200"
+              ? "border-cardamom bg-card text-cardamom"
+              : "border-danger bg-card text-danger"
           }`}
         >
           {toast.message}
         </div>
       )}
 
+      {/*
+        Deliberately a ghost control, not a filled CTA. This is a connection
+        *status* affordance; "Snap a dish" is the page's single primary action.
+      */}
       {!isConnected && (
         <button
           type="button"
           onClick={connect}
-          className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] hover:shadow-orange-500/30 sm:flex"
+          className="flex h-10 items-center gap-2 rounded-full border border-rule px-4 text-[13px] font-medium text-ink-2 transition-colors hover:border-ink hover:bg-card hover:text-ink"
         >
-          <LinkIcon size={15} />
-          Connect Swiggy Account
+          <LinkIcon size={13} />
+          Connect Swiggy
         </button>
       )}
 
@@ -116,31 +120,32 @@ export default function SwiggyConnectButton() {
         <button
           type="button"
           onClick={connect}
-          className="flex animate-pulse items-center gap-2 rounded-xl border border-amber-300/50 bg-amber-400/15 px-4 py-2.5 text-sm font-semibold text-amber-200 shadow-lg shadow-amber-500/10 transition-colors hover:bg-amber-400/20"
+          className="flex h-10 items-center gap-2 rounded-full border border-turmeric bg-turmeric/12 px-4 text-[13px] font-semibold text-ink transition-colors hover:bg-turmeric/20"
         >
-          <RefreshCw size={15} />
-          Reconnect Swiggy
+          <RefreshCw size={13} />
+          Reconnect
         </button>
       )}
 
       {isConnected && !isExpiringSoon && (
         <div className="group relative">
-          <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm font-semibold text-success">
-            <Check size={15} />
-            Swiggy Connected
+          <div className="flex h-10 items-center gap-2 rounded-full border border-cardamom/40 bg-cardamom/10 px-4 text-[13px] font-semibold text-cardamom">
+            <Check size={13} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Swiggy connected</span>
           </div>
-          <p className="mt-1 hidden text-center text-[10px] font-medium text-muted sm:block">
-            {formatExpiry(data?.expiresInMinutes ?? null)}
-          </p>
           <a
             href="/api/auth/logout"
-            className="absolute right-0 top-12 hidden items-center gap-2 rounded-xl border border-white/10 bg-black/85 px-3 py-2 text-xs font-semibold text-white shadow-2xl backdrop-blur-xl transition-colors hover:border-danger/50 hover:text-red-300 group-hover:flex"
+            className="absolute right-0 top-12 hidden items-center gap-2 whitespace-nowrap border border-rule bg-card px-3 py-2 text-[12px] font-semibold text-ink shadow-[0_12px_30px_-12px_rgba(22,18,14,0.5)] transition-colors hover:text-danger group-hover:flex group-focus-within:flex"
           >
-            <LogOut size={13} />
+            <LogOut size={12} />
             Disconnect
+            <span className="label ml-2 text-[9px]">
+              {formatExpiry(data?.expiresInMinutes ?? null)}
+            </span>
           </a>
         </div>
       )}
     </div>
   );
 }
+
