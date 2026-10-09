@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Archivo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import ScrollReveal from "./_components/ScrollReveal";
+import StoreHydration from "./_components/StoreHydration";
 
 // Fraunces is the voice. Loading SOFT and WONK lets headlines be genuinely
 // idiosyncratic — a "wonky" serif with soft terminals — rather than reading
@@ -63,6 +64,7 @@ export default function RootLayout({
       {/* Browser extensions inject attributes into <body> before hydration,
           which React would otherwise report as a mismatch. */}
       <body className="min-h-screen bg-paper text-ink" suppressHydrationWarning>
+        <StoreHydration />
         {children}
         <ScrollReveal />
       </body>

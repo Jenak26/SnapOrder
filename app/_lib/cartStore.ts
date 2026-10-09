@@ -169,6 +169,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "snaporder-cart",
+      // Rehydrated in <StoreHydration /> after mount so the first client
+      // render matches the server's empty cart.
+      skipHydration: true,
       // Only persist `items` — sidebar state is ephemeral
       partialize: (state) => ({
         items: state.items,
