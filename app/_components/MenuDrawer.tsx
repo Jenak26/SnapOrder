@@ -2,15 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  X,
-  Star,
-  Clock,
-  MapPin,
-  Flame,
-  Minus,
-  Plus,
-} from "lucide-react";
+import { X, Star, Minus, Plus } from "lucide-react";
 import { type Restaurant } from "@/app/_lib/mockRestaurants";
 import { useCartStore } from "@/app/_lib/cartStore";
 import {
@@ -50,6 +42,23 @@ function isBestseller(item: MenuItem, itemIndex: number, sectionName: string) {
     ["recommended", "best sellers", "bestseller", "popular"].some((label) =>
       sectionName.toLowerCase().includes(label)
     )
+  );
+}
+
+/** The FSSAI-style veg/non-veg mark, drawn properly rather than as a dot. */
+function VegMark({ isVeg }: { isVeg?: boolean }) {
+  const color = isVeg ? "#2f6b4c" : "#b3271a";
+  return (
+    <span
+      className="flex h-[13px] w-[13px] shrink-0 items-center justify-center border"
+      style={{ borderColor: color }}
+      aria-label={isVeg ? "Vegetarian" : "Non-vegetarian"}
+    >
+      <span
+        className="h-[6px] w-[6px] rounded-full"
+        style={{ background: color }}
+      />
+    </span>
   );
 }
 
@@ -127,9 +136,7 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
 
       try {
         const res = await fetch(
-          `/api/cart/switch-check?restaurantId=${encodeURIComponent(
-            restaurantId
-          )}`
+          `/api/cart/switch-check?restaurantId=${encodeURIComponent(restaurantId)}`
         );
         const warning = (await res.json()) as SwitchWarning;
 
@@ -178,29 +185,33 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
     <>
       {/* Restaurant switch warning */}
       {isOpen && switchWarning && !isSwitchCheckDone && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
-          <div className="glass-strong w-full max-w-md rounded-3xl p-6 shadow-2xl animate-scale-in">
-            <h3 className="text-xl font-bold text-white">Clear current cart?</h3>
-            <p className="mt-3 text-sm leading-6 text-muted">
-              Your cart has {switchWarning.currentItemCount} items from{" "}
-              <span className="font-semibold text-white">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/65 px-5 backdrop-blur-[3px]">
+          <div className="animate-sheet-up w-full max-w-md bg-card p-7 shadow-[0_30px_80px_-30px_rgba(22,18,14,0.75)]">
+            <p className="label label-chilli">One kitchen at a time</p>
+            <h3 className="serif mt-2 text-[28px] leading-tight text-ink">
+              Clear your current bill?
+            </h3>
+            <p className="mt-4 text-[14px] leading-relaxed text-ink-2">
+              You have {switchWarning.currentItemCount} item
+              {switchWarning.currentItemCount === 1 ? "" : "s"} from{" "}
+              <span className="font-semibold text-ink">
                 {switchWarning.currentRestaurantName}
               </span>{" "}
-              (₹{switchWarning.currentTotal}). Opening this menu will clear your
-              cart. Continue?
+              (₹{switchWarning.currentTotal}). Swiggy carts hold one kitchen, so
+              opening this menu empties that one.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={handleKeepCart}
-                className="flex-1 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-muted transition-colors hover:border-white/30 hover:text-white"
+                className="btn-press-sm flex-1 rounded-full border border-ink bg-card px-4 py-3 text-[14px] font-semibold text-ink"
               >
-                Keep my cart
+                Keep my bill
               </button>
               <button
                 onClick={handleClearAndContinue}
-                className="flex-1 rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+                className="btn-press-sm flex-1 rounded-full bg-chilli px-4 py-3 text-[14px] font-semibold text-card hover:bg-chilli-2"
               >
-                Clear cart & continue
+                Clear &amp; continue
               </button>
             </div>
           </div>
@@ -209,183 +220,187 @@ export default function MenuDrawer({ isOpen, onClose, restaurant }: Props) {
 
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-          shouldShowDrawer ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-[60] bg-ink/55 backdrop-blur-[3px] transition-opacity duration-300 ${
+          shouldShowDrawer ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[85vh] flex-col sm:left-auto sm:top-0 sm:h-full sm:w-[480px] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed bottom-0 left-0 right-0 z-[60] flex h-[88vh] flex-col bg-card transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] sm:left-auto sm:top-0 sm:h-full sm:w-[500px] ${
           shouldShowDrawer
             ? "translate-y-0 sm:translate-x-0"
             : "translate-y-full sm:translate-y-0 sm:translate-x-full"
         }`}
       >
-        <div className="flex h-full flex-col glass-strong sm:border-l border-glass-border sm:rounded-none rounded-t-[2.5rem] overflow-hidden">
-          
-          {/* Header Image & Close */}
-          <div className="relative h-48 shrink-0">
-            <Image
-              src={restaurant.image}
-              alt={restaurant.name}
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-            
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full glass hover:bg-white/20 transition-colors"
-            >
-              <X size={18} className="text-white" />
-            </button>
+        {/* Plate */}
+        <div className="photo-tint relative h-44 shrink-0 overflow-hidden">
+          <Image
+            src={restaurant.image}
+            alt={restaurant.name}
+            fill
+            sizes="500px"
+            className="photo-warm object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
 
-            <div className="absolute bottom-4 left-5 right-5">
-              <h2 className="text-2xl font-bold text-white">{restaurant.name}</h2>
-              <p className="text-sm text-white/80">{restaurant.cuisine}</p>
-            </div>
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-card text-ink transition-colors hover:bg-chilli hover:text-card sm:h-9 sm:w-9"
+            aria-label="Close menu"
+          >
+            <X size={16} />
+          </button>
+
+          <div className="absolute inset-x-5 bottom-4">
+            <p className="label text-paper/60">{restaurant.cuisine}</p>
+            <h2 className="serif mt-1 text-[30px] leading-none text-paper">
+              {restaurant.name}
+            </h2>
           </div>
+        </div>
 
-          {/* Restaurant Stats Bar */}
-          <div className="flex items-center justify-between border-b border-border bg-surface-2 px-5 py-4 shrink-0">
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1.5 font-bold text-foreground">
-                <Star size={14} className="fill-amber-400 text-amber-400" />
-                {restaurant.rating}
-              </div>
-              <p className="text-[10px] text-muted">{restaurant.reviews} ratings</p>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1.5 font-bold text-foreground">
-                <Clock size={14} className="text-blue-400" />
-                {restaurant.deliveryTime}
-              </div>
-              <p className="text-[10px] text-muted">Delivery</p>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1.5 font-bold text-foreground">
-                <MapPin size={14} className="text-accent" />
-                {restaurant.distance}
-              </div>
-              <p className="text-[10px] text-muted">Distance</p>
-            </div>
+        {/* Stats rail */}
+        <dl className="mono grid shrink-0 grid-cols-3 border-b border-rule">
+          <div className="border-r border-rule px-4 py-3">
+            <dt className="label text-[9px]">Rating</dt>
+            <dd className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+              <Star size={11} className="fill-turmeric text-turmeric" />
+              {restaurant.rating}
+            </dd>
           </div>
+          <div className="border-r border-rule px-4 py-3">
+            <dt className="label text-[9px]">Delivery</dt>
+            <dd className="mt-1 text-[13px] font-semibold text-ink">
+              {restaurant.deliveryTime}
+            </dd>
+          </div>
+          <div className="px-4 py-3">
+            <dt className="label text-[9px]">Distance</dt>
+            <dd className="mt-1 text-[13px] font-semibold text-ink">
+              {restaurant.distance}
+            </dd>
+          </div>
+        </dl>
 
-          {/* Menu Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-6">
-            {isLoadingMenu ? (
-              <div className="space-y-5">
-                {[0, 1, 2].map((item) => (
-                  <div
-                    key={item}
-                    className="flex gap-4 border-b border-border/50 pb-6 last:border-0 last:pb-0 animate-pulse"
-                  >
-                    <div className="flex-1">
-                      <div className="mb-3 h-4 w-4 rounded-sm bg-white/10" />
-                      <div className="h-4 w-3/4 rounded bg-white/10" />
-                      <div className="mt-3 h-3 w-20 rounded bg-white/10" />
-                      <div className="mt-4 h-3 w-full rounded bg-white/10" />
-                      <div className="mt-2 h-3 w-2/3 rounded bg-white/10" />
-                    </div>
-                    <div className="h-9 w-28 rounded-xl bg-white/10" />
+        {/* Menu */}
+        <div className="flex-1 overflow-y-auto px-5 py-6">
+          {isLoadingMenu ? (
+            <div className="space-y-6">
+              {[0, 1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="flex animate-pulse gap-4 border-b border-rule pb-6"
+                >
+                  <div className="flex-1 space-y-2.5">
+                    <div className="h-3 w-3 bg-ink/10" />
+                    <div className="h-3.5 w-2/3 bg-ink/10" />
+                    <div className="h-3 w-16 bg-ink/10" />
+                    <div className="h-2.5 w-full bg-ink/8" />
                   </div>
-                ))}
-              </div>
-            ) : (
-              sections.map((section) => (
-                <div key={section.name} className="mb-8 last:mb-0">
-                  <h3 className="mb-4 text-lg font-bold text-foreground flex items-center gap-2">
+                  <div className="h-9 w-24 shrink-0 rounded-full bg-ink/10" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            sections.map((section) => (
+              <section key={section.name} className="mb-9 last:mb-0">
+                <div className="flex items-center gap-3">
+                  <h3 className="label label-ink whitespace-nowrap">
                     {section.name}
-                    <span className="text-xs font-normal text-muted bg-surface px-2 py-0.5 rounded-full">
-                      {section.items.length}
-                    </span>
                   </h3>
-                  
-                  <div className="space-y-6">
-                    {section.items.map((baseItem, itemIndex) => {
-                      const item = {
-                        ...baseItem,
-                        bestseller:
-                          (baseItem as DrawerMenuItem).bestseller ??
-                          isBestseller(baseItem, itemIndex, section.name),
-                      };
-                      const cartId = `${item.name}::${restaurant.name}`;
-                      const cartItem = cartItems.find((i) => i.id === cartId);
-                      const qty = cartItem?.qty || 0;
+                  <span className="rule-h" />
+                  <span className="mono text-[10px] text-ink-3">
+                    {String(section.items.length).padStart(2, "0")}
+                  </span>
+                </div>
 
-                      return (
-                        <div key={item.itemId || `${section.name}-${item.name}`} className="flex gap-4 border-b border-border/50 pb-6 last:border-0 last:pb-0">
-                          <div className="flex-1">
-                            {/* Veg/Non-Veg Badge */}
-                            <div className={`mb-1.5 flex h-4 w-4 items-center justify-center border ${item.isVeg ? "border-green-500" : "border-red-500"} rounded-sm`}>
-                              <div className={`h-2 w-2 rounded-full ${item.isVeg ? "bg-green-500" : "bg-red-500"}`} />
-                            </div>
+                <ul className="mt-4">
+                  {section.items.map((baseItem, itemIndex) => {
+                    const item = {
+                      ...baseItem,
+                      bestseller:
+                        (baseItem as DrawerMenuItem).bestseller ??
+                        isBestseller(baseItem, itemIndex, section.name),
+                    };
+                    const cartId = `${item.name}::${restaurant.name}`;
+                    const cartItem = cartItems.find((i) => i.id === cartId);
+                    const qty = cartItem?.qty || 0;
 
-                            <h4 className="text-sm font-bold text-foreground">{item.name}</h4>
-                            <p className="mt-1 text-sm font-semibold text-foreground">₹{item.price}</p>
-                            
+                    return (
+                      <li
+                        key={item.itemId || `${section.name}-${item.name}`}
+                        className="flex gap-5 border-b border-rule py-5 last:border-0"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <VegMark isVeg={item.isVeg} />
                             {item.bestseller && (
-                              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
-                                <Flame size={10} /> BESTSELLER
+                              <span className="label label-chilli text-[9px]">
+                                Bestseller
                               </span>
                             )}
-
-                            <p className="mt-2 line-clamp-2 text-xs text-muted leading-relaxed">
-                              {item.description}
-                            </p>
                           </div>
 
-                          {/* Add to Cart Control */}
-                          <div className="relative w-28 shrink-0 pt-2">
-                            <div className="absolute inset-x-0 -top-2 flex justify-center">
-                              <div className="relative w-full rounded-xl bg-surface border border-border shadow-lg overflow-hidden">
-                                {qty === 0 ? (
-                                  <button
-                                    onClick={() => addItem({
-                                      itemId: item.itemId || `${restaurantId}-${item.name}`,
-                                      restaurantId,
-                                      name: item.name,
-                                      restaurant: restaurant.name,
-                                      price: item.price,
-                                      image: item.imageUrl || restaurant.image,
-                                    })}
-                                    className="w-full py-2 text-sm font-bold text-accent hover:bg-accent/5 transition-colors uppercase tracking-wide"
-                                  >
-                                    Add
-                                  </button>
-                                ) : (
-                                  <div className="flex items-center justify-between bg-accent text-white px-2 py-1.5">
-                                    <button
-                                      onClick={() => decrementItem(cartId)}
-                                      className="flex h-6 w-6 items-center justify-center hover:bg-white/20 rounded transition-colors"
-                                    >
-                                      <Minus size={14} />
-                                    </button>
-                                    <span className="text-sm font-bold w-4 text-center">{qty}</span>
-                                    <button
-                                      onClick={() => incrementItem(cartId)}
-                                      className="flex h-6 w-6 items-center justify-center hover:bg-white/20 rounded transition-colors"
-                                    >
-                                      <Plus size={14} />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                          <h4 className="mt-2 text-[15px] font-medium leading-snug text-ink">
+                            {item.name}
+                          </h4>
+                          <p className="mono mt-1 text-[13px] font-semibold text-ink">
+                            ₹{item.price}
+                          </p>
+                          <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-ink-2">
+                            {item.description}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
 
+                        <div className="shrink-0 pt-1">
+                          {qty === 0 ? (
+                            <button
+                              onClick={() =>
+                                addItem({
+                                  itemId:
+                                    item.itemId || `${restaurantId}-${item.name}`,
+                                  restaurantId,
+                                  name: item.name,
+                                  restaurant: restaurant.name,
+                                  price: item.price,
+                                  image: item.imageUrl || restaurant.image,
+                                })
+                              }
+                              className="btn-press-sm w-[92px] rounded-full border border-ink bg-card py-2.5 text-[13px] font-bold uppercase tracking-wide text-chilli sm:py-2"
+                            >
+                              Add
+                            </button>
+                          ) : (
+                            <div className="flex w-[92px] items-center justify-between rounded-full bg-chilli px-1.5 py-1.5 text-card">
+                              <button
+                                onClick={() => decrementItem(cartId)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-card/20 sm:h-7 sm:w-7"
+                                aria-label={`One fewer ${item.name}`}
+                              >
+                                <Minus size={13} strokeWidth={2.5} />
+                              </button>
+                              <span className="mono text-[13px] font-bold">
+                                {qty}
+                              </span>
+                              <button
+                                onClick={() => incrementItem(cartId)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-card/20 sm:h-7 sm:w-7"
+                                aria-label={`One more ${item.name}`}
+                              >
+                                <Plus size={13} strokeWidth={2.5} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))
+          )}
         </div>
       </div>
     </>

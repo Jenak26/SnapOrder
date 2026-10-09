@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
+import { useDockHeight } from "@/app/_hooks/useDockHeight";
 
 const STORAGE_KEY = "snaporder-privacy-acknowledged";
 const CHANGE_EVENT = "snaporder-privacy-change";
@@ -25,6 +26,10 @@ export default function PrivacyNotice() {
     getSnapshot,
     getServerSnapshot
   );
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sits at the very bottom of the dock; everything else stacks above it.
+  useDockHeight(ref, "--dock-privacy", isVisible);
 
   const acknowledge = () => {
     localStorage.setItem(STORAGE_KEY, "true");
@@ -36,25 +41,26 @@ export default function PrivacyNotice() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-20 z-30 px-4 pb-3 sm:bottom-6 sm:px-6">
-      <div className="mx-auto max-w-3xl animate-fade-up rounded-3xl border border-orange-400/30 bg-black/80 p-4 shadow-2xl shadow-orange-950/30 backdrop-blur-2xl sm:flex sm:items-center sm:gap-4 sm:p-5">
-        <p className="text-sm leading-relaxed text-white/78">
-          SnapOrder uses Swiggy&apos;s platform to find restaurants and place
-          orders. Your location is used only to find nearby restaurants and is
-          never stored on our servers. Order data is governed by Swiggy&apos;s
+    <div ref={ref} className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-6 sm:pb-4">
+      <div className="animate-rise mx-auto flex max-w-3xl flex-col gap-3 bg-ink px-4 py-3.5 text-paper shadow-[0_20px_50px_-20px_rgba(22,18,14,0.8)] sm:flex-row sm:items-center sm:gap-6 sm:px-5 sm:py-4">
+        <p className="label shrink-0 text-paper/45">Note</p>
+        <p className="flex-1 text-[12.5px] leading-relaxed text-paper/75 sm:text-[13px]">
+          Your photo is read and discarded, never stored. Your location is used
+          only to find nearby kitchens. Orders are handled by Swiggy under their
           privacy policy.
         </p>
-        <div className="mt-4 flex shrink-0 items-center gap-3 sm:mt-0">
+        <div className="flex shrink-0 items-center justify-between gap-4">
           <Link
             href="/privacy"
-            className="text-sm font-semibold text-orange-300 transition-colors hover:text-orange-200"
+            className="link-draw py-2 text-[13px] font-medium text-paper/70 hover:text-paper"
           >
-            Learn more -&gt;
+            Details
           </Link>
           <button
             type="button"
             onClick={acknowledge}
-            className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-colors hover:bg-orange-400"
+            className="btn-press-sm rounded-full bg-chilli px-6 py-2.5 text-[13px] font-semibold text-card hover:bg-chilli-2"
+            style={{ boxShadow: "2px 2px 0 #f2ece1" }}
           >
             Got it
           </button>

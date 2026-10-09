@@ -1,30 +1,40 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Fraunces, Archivo, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import ScrollReveal from "./_components/ScrollReveal";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Fraunces is the voice. Loading SOFT and WONK lets headlines be genuinely
+// idiosyncratic — a "wonky" serif with soft terminals — rather than reading
+// as the generic serif every AI landing page reaches for.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Editorial display face for headlines only. Geist alone reads as stock
-// create-next-app; the serif/sans pairing gives the page a voice.
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: "400",
+  axes: ["SOFT", "WONK", "opsz"],
   style: ["normal", "italic"],
+  display: "swap",
+});
+
+// Archivo runs the interface: a warm grotesque with enough width to sit
+// beside a display serif without going invisible the way Inter does.
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Anything that behaves like data on a kitchen ticket — prices, order IDs,
+// MCP tool names, timings — is set in mono. It is a semantic choice here,
+// not decoration.
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "SnapOrder — Snap a Photo, Get Your Food",
   description:
-    "Upload any food photo and instantly order the closest matching dish from top restaurants near you. AI-powered food recognition meets instant delivery.",
+    "Photograph any dish. SnapOrder identifies it with Gemini vision, finds who cooks it nearest to you through Swiggy, and orders it — in about a minute.",
   keywords: [
     "food ordering",
     "AI food recognition",
@@ -35,7 +45,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SnapOrder — Snap a Photo, Get Your Food",
     description:
-      "Upload any food photo and instantly order the closest matching dish.",
+      "Photograph any dish. We identify it, find who cooks it nearest to you, and order it.",
     type: "website",
   },
 };
@@ -48,15 +58,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+      className={`${fraunces.variable} ${archivo.variable} ${jetbrains.variable} antialiased`}
     >
       {/* Browser extensions inject attributes into <body> before hydration,
           which React would otherwise report as a mismatch. */}
-      <body
-        className="min-h-screen bg-background text-foreground"
-        suppressHydrationWarning
-      >
+      <body className="min-h-screen bg-paper text-ink" suppressHydrationWarning>
         {children}
+        <ScrollReveal />
       </body>
     </html>
   );

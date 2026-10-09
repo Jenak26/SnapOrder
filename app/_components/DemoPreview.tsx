@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ShoppingBag, Clock, Star, Utensils, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Plus } from "lucide-react";
 import type { MatchResult, AnalyzeImageResult } from "@/app/_lib/types";
 import { useCartStore, parsePrice } from "@/app/_lib/cartStore";
+import SectionHead from "./SectionHead";
 
 const fallbackResults: MatchResult[] = [
   {
@@ -50,7 +51,7 @@ export default function DemoPreview({ results, analysis }: Props) {
   const addItem = useCartStore((s) => s.addItem);
 
   const displayResults = results && results.length > 0 ? results : fallbackResults;
-  const isLive = results && results.length > 0;
+  const isLive = Boolean(results && results.length > 0);
 
   const next = () => setActiveIdx((i) => (i + 1) % displayResults.length);
   const prev = () =>
@@ -59,148 +60,178 @@ export default function DemoPreview({ results, analysis }: Props) {
   // Reset activeIdx if results change length
   const safeIdx = activeIdx >= displayResults.length ? 0 : activeIdx;
   const result = displayResults[safeIdx];
+  const added = justAdded === result.name;
 
   return (
-    <section id="demo" className="relative py-24 sm:py-32">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-accent/5 blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl px-5 lg:px-8">
-        {/* Section header */}
-        <div className="mb-14 max-w-2xl">
-          <p className="eyebrow mb-4">{isLive ? "Results" : "Walkthrough"}</p>
-          <h2 className="display text-4xl sm:text-5xl">
-            {isLive ? (
-              <>Your <span className="display-em">matches</span></>
+    <section id="demo" className="relative px-5 py-24 sm:py-32 lg:px-10">
+      <div className="mx-auto max-w-[1400px]">
+        <SectionHead
+          index="02"
+          eyebrow={isLive ? "Your results" : "Walkthrough"}
+          title={
+            isLive ? (
+              <>
+                What we <span className="display-em">found.</span>
+              </>
             ) : (
-              <>See it in <span className="display-em">action</span></>
-            )}
-          </h2>
-          <p className="mt-4 text-base text-muted">
-            {isLive
-              ? "Here are the dishes that match your uploaded photo"
-              : "Here\u0027s what happens after you upload a photo"}
-          </p>
+              <>
+                A taste of <span className="display-em">your matches.</span>
+              </>
+            )
+          }
+          lede={
+            isLive
+              ? "Ranked by visual match, then by how close the kitchen is to you."
+              : "Explore sample dishes to see how matching works. Upload your photo for your own results."
+          }
+        />
 
-          {/* Analysis pill strip */}
-          {isLive && analysis && (
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2 animate-fade-up">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 border border-accent/20 px-3.5 py-1.5 text-xs font-semibold text-accent">
-                <Utensils size={12} />
-                {analysis.dish_name}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-3.5 py-1.5 text-xs font-medium text-foreground">
-                {Math.round(analysis.confidence * 100)}% confident
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-3.5 py-1.5 text-xs font-medium text-muted">
-                {analysis.cuisine}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-3.5 py-1.5 text-xs font-medium text-muted">
-                &ldquo;{analysis.search_query}&rdquo;
-              </span>
-            </div>
-          )}
-        </div>
+        {/* ── Detection readout ─────────────────────────────── */}
+        {isLive && analysis && (
+          <dl
+            data-reveal
+            className="mono mb-10 grid gap-px overflow-hidden border border-rule bg-rule text-[11px] sm:grid-cols-2 lg:grid-cols-4"
+          >
+            {[
+              { k: "Dish", v: analysis.dish_name },
+              { k: "Confidence", v: `${Math.round(analysis.confidence * 100)}%` },
+              { k: "Cuisine", v: analysis.cuisine },
+              { k: "Query", v: `"${analysis.search_query}"` },
+            ].map((row) => (
+              <div key={row.k} className="bg-card px-4 py-3.5">
+                <dt className="label">{row.k}</dt>
+                <dd className="mt-1.5 truncate text-[13px] font-medium text-ink">
+                  {row.v}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
 
-        <div className="grid items-center gap-10 lg:grid-cols-5 lg:gap-16">
-          {/* Left: Demo phone / image */}
-          <div className="lg:col-span-2 flex justify-center">
-            <div className="relative w-full max-w-[320px]">
-              <div className="overflow-hidden rounded-3xl glass glow-orange">
-                <Image
-                  src={result.image}
-                  alt={result.name}
-                  width={320}
-                  height={400}
-                  className="h-[400px] w-full object-cover transition-all duration-500"
-                />
-                {/* Match percentage overlay */}
-                <div className="absolute top-4 right-4 glass rounded-full px-3 py-1.5">
-                  <span className="text-xs font-bold text-accent">
-                    {result.match}% Match
-                  </span>
+        <div data-reveal className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* ── The plate ───────────────────────────────────── */}
+          <div className="lg:col-span-6">
+            <div className="photo-tint relative overflow-hidden border border-ink/15 shadow-[0_28px_70px_-30px_rgba(22,18,14,0.55)]">
+              <Image
+                key={result.image}
+                src={result.image}
+                alt={result.name}
+                width={880}
+                height={660}
+                className="photo-warm animate-rise aspect-[4/3] w-full object-cover"
+              />
+
+              {isLive && (
+                <div className="absolute left-4 top-4 flex items-center gap-2 bg-card px-2.5 py-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-chilli animate-blink" />
+                  <span className="label label-ink text-[9px]">Live</span>
                 </div>
+              )}
 
-                {/* Live badge */}
-                {isLive && (
-                  <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-green-500/90 px-2.5 py-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white">
-                      Live
-                    </span>
-                  </div>
-                )}
+              <div className="absolute right-4 top-4 flex h-[78px] w-[78px] -rotate-[13deg] flex-col items-center justify-center bg-paper/85 text-chilli backdrop-blur-[2px] stamp">
+                <span className="mono text-[20px] font-bold leading-none">
+                  {result.match}
+                </span>
+                <span className="mt-0.5 text-[8px] font-bold leading-none">
+                  % MATCH
+                </span>
               </div>
             </div>
+
+            {/* Contact sheet — switching plates is a visual choice, so show
+                the plates rather than abstract dots. */}
+            {displayResults.length > 1 && (
+              <div className="mt-4 flex gap-3">
+                {displayResults.map((r, i) => (
+                  <button
+                    key={`${r.name}-${i}`}
+                    onClick={() => setActiveIdx(i)}
+                    aria-label={`View ${r.name}`}
+                    aria-current={i === safeIdx}
+                    className={`relative h-16 w-20 overflow-hidden border transition-all duration-300 ${
+                      i === safeIdx
+                        ? "border-chilli opacity-100"
+                        : "border-rule opacity-45 hover:opacity-80"
+                    }`}
+                  >
+                    <Image
+                      src={r.image}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Right: Result card */}
-          <div className="lg:col-span-3">
-            <div className="glass rounded-3xl p-8">
-              {/* Navigation */}
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted">
-                  {isLive ? "Your Match" : "AI Match Result"} • {safeIdx + 1}/{displayResults.length}
+          {/* ── The particulars ─────────────────────────────── */}
+          <div className="lg:col-span-6">
+            <div className="flex items-center justify-between border-b border-rule pb-4">
+              <span className="mono text-[11px] text-ink-3">
+                <span className="text-ink">
+                  {String(safeIdx + 1).padStart(2, "0")}
+                </span>
+                {" / "}
+                {String(displayResults.length).padStart(2, "0")}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={prev}
+                  id="demo-prev"
+                  aria-label="Previous match"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-rule text-ink transition-colors hover:border-ink hover:bg-card sm:h-10 sm:w-10"
+                >
+                  <ArrowLeft size={15} />
+                </button>
+                <button
+                  onClick={next}
+                  id="demo-next"
+                  aria-label="Next match"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-rule text-ink transition-colors hover:border-ink hover:bg-card sm:h-10 sm:w-10"
+                >
+                  <ArrowRight size={15} />
+                </button>
+              </div>
+            </div>
+
+            <h3 className="display mt-7 text-[2.5rem] leading-[0.95] sm:text-[3.25rem]">
+              {result.name}
+            </h3>
+            <p className="mono mt-4 text-[12px] text-ink-2">
+              {result.restaurant}
+              <span className="mx-2 text-ink-3">·</span>
+              {result.distance}
+            </p>
+
+            <dl className="mt-9 border-t border-rule">
+              {[
+                { k: "Rating", v: `${result.rating} / 5` },
+                { k: "Delivery window", v: result.deliveryTime },
+                { k: "Visual match", v: `${result.match}%` },
+              ].map((row) => (
+                <div
+                  key={row.k}
+                  className="flex items-baseline justify-between border-b border-rule py-3.5"
+                >
+                  <dt className="label">{row.k}</dt>
+                  <dd className="mono text-[13px] font-medium text-ink">
+                    {row.v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-9 flex items-end justify-between gap-6">
+              <div>
+                <p className="label">Price</p>
+                <p className="numeral mt-1 text-[3.25rem] leading-none text-ink">
+                  {result.price}
                 </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={prev}
-                    id="demo-prev"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:border-accent hover:text-accent"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <button
-                    onClick={next}
-                    id="demo-next"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:border-accent hover:text-accent"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
               </div>
 
-              {/* Result info */}
-              <h3 className="text-2xl font-bold text-foreground sm:text-3xl">
-                {result.name}
-              </h3>
-              <p className="mt-1.5 text-sm text-muted">
-                {result.restaurant} • {result.distance}
-              </p>
-
-              {/* Stats */}
-              <div className="mt-6 grid grid-cols-3 gap-4">
-                <div className="rounded-2xl bg-surface p-4 text-center">
-                  <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                    <Star size={14} />
-                  </div>
-                  <p className="text-lg font-bold text-foreground">
-                    {result.rating}
-                  </p>
-                  <p className="text-[10px] text-muted">Rating</p>
-                </div>
-                <div className="rounded-2xl bg-surface p-4 text-center">
-                  <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10 text-green-400">
-                    <Clock size={14} />
-                  </div>
-                  <p className="text-lg font-bold text-foreground">
-                    {result.deliveryTime}
-                  </p>
-                  <p className="text-[10px] text-muted">Delivery</p>
-                </div>
-                <div className="rounded-2xl bg-surface p-4 text-center">
-                  <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
-                    <ShoppingBag size={14} />
-                  </div>
-                  <p className="text-lg font-bold text-foreground">
-                    {result.price}
-                  </p>
-                  <p className="text-[10px] text-muted">Price</p>
-                </div>
-              </div>
-
-              {/* CTA */}
               <button
                 id="demo-order"
                 onClick={() => {
@@ -213,40 +244,22 @@ export default function DemoPreview({ results, analysis }: Props) {
                   setJustAdded(result.name);
                   setTimeout(() => setJustAdded(null), 1500);
                 }}
-                className={`mt-8 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-semibold text-white transition-all duration-300 ${
-                  justAdded === result.name
-                    ? "bg-success"
-                    : "bg-accent hover:bg-accent-hover hover:shadow-lg hover:shadow-accent/20"
+                className={`btn-press flex shrink-0 items-center gap-2.5 rounded-full px-7 py-4 text-[15px] font-semibold text-card transition-colors ${
+                  added ? "bg-cardamom" : "bg-chilli hover:bg-chilli-2"
                 }`}
               >
-                {justAdded === result.name ? (
+                {added ? (
                   <>
-                    <Check size={16} />
-                    Added!
+                    <Check size={16} strokeWidth={2.5} />
+                    In your cart
                   </>
                 ) : (
                   <>
-                    <ShoppingBag size={16} />
-                    Add to Cart — {result.price}
+                    <Plus size={16} strokeWidth={2.5} />
+                    Add to cart
                   </>
                 )}
               </button>
-
-              {/* Dots indicator */}
-              <div className="mt-6 flex justify-center gap-2">
-                {displayResults.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveIdx(i)}
-                    className={`h-1.5 rounded-full transition-all ${
-                      i === safeIdx
-                        ? "w-6 bg-accent"
-                        : "w-1.5 bg-border hover:bg-muted"
-                    }`}
-                    aria-label={`View result ${i + 1}`}
-                  />
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -254,3 +267,4 @@ export default function DemoPreview({ results, analysis }: Props) {
     </section>
   );
 }
+

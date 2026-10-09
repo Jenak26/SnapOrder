@@ -1,94 +1,131 @@
 import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import Wordmark from "../_components/Wordmark";
 
 const swiggyPrivacyUrl = "https://www.swiggy.com/privacy-policy";
 
+const sections = [
+  {
+    n: "01",
+    heading: "What SnapOrder collects",
+    rows: [
+      {
+        k: "Photographs",
+        v: "Your photo is sent to Gemini for identification and discarded once the dish is named. SnapOrder never writes it to disk.",
+      },
+      {
+        k: "Location",
+        v: "Coordinates are held for the length of your session to find nearby kitchens. They are not persisted on any SnapOrder server.",
+      },
+      {
+        k: "Cart contents",
+        v: "Kept in your own browser's localStorage so your bill survives a refresh. It never leaves the device except as part of an order you place.",
+      },
+    ],
+  },
+  {
+    n: "02",
+    heading: "What Swiggy handles",
+    rows: [
+      {
+        k: "Restaurants & menus",
+        v: "All restaurant data, availability and pricing come from Swiggy's live network.",
+      },
+      {
+        k: "Orders & delivery",
+        v: "Order processing, payment and delivery are carried out by Swiggy and governed by their privacy practices.",
+      },
+    ],
+  },
+];
+
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-background px-5 py-10 text-foreground lg:px-8">
+    <main className="min-h-screen px-5 py-10 lg:px-10">
       <div className="mx-auto max-w-3xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted transition-colors hover:text-accent"
-        >
-          <ArrowLeft size={16} />
-          Back to SnapOrder
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="group">
+            <Wordmark />
+          </Link>
+          <Link
+            href="/"
+            className="link-draw inline-flex items-center gap-2 text-[13px] font-medium text-ink-2 hover:text-ink"
+          >
+            <ArrowLeft size={14} />
+            Back
+          </Link>
+        </div>
 
-        <header className="mt-10 border-b border-border pb-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-accent">
-            Privacy
-          </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">
-            SnapOrder Data Handling
+        <header className="mt-20 border-b border-ink/25 pb-10">
+          <div className="flex items-center gap-4">
+            <span className="mono text-[11px] text-chilli">00</span>
+            <span className="label">Data handling</span>
+            <span className="rule-h" />
+          </div>
+          <h1 className="display mt-6 text-[3rem] leading-[0.92] sm:text-[4.5rem]">
+            What we keep.
+            <br />
+            <span className="display-em">Almost nothing.</span>
           </h1>
-          <p className="mt-4 text-sm leading-6 text-muted">
-            Last updated: April 2026
+          <p className="mono mt-6 text-[11px] text-ink-3">
+            LAST UPDATED — APRIL 2026
           </p>
         </header>
 
-        <div className="space-y-10 py-10">
-          <section className="glass rounded-3xl p-6">
-            <h2 className="text-xl font-bold text-white">
-              What SnapOrder Collects
-            </h2>
-            <ul className="mt-5 space-y-4 text-sm leading-6 text-muted">
-              <li>
-                <span className="font-semibold text-white">Photos:</span> Food
-                photos are processed to identify matching dishes and are not
-                stored by SnapOrder.
-              </li>
-              <li>
-                <span className="font-semibold text-white">
-                  Location coordinates:
-                </span>{" "}
-                Coordinates are used during the session to find nearby
-                restaurants and are not stored on SnapOrder servers.
-              </li>
-              <li>
-                <span className="font-semibold text-white">Cart state:</span>{" "}
-                Cart contents are saved only in your browser&apos;s localStorage
-                so the cart can persist during your visit.
-              </li>
-            </ul>
-          </section>
+        {sections.map((section) => (
+          <section key={section.n} className="mt-14">
+            <div className="flex items-center gap-4">
+              <span className="mono text-[11px] text-chilli">{section.n}</span>
+              <h2 className="label label-ink whitespace-nowrap">
+                {section.heading}
+              </h2>
+              <span className="rule-h" />
+            </div>
 
-          <section className="glass rounded-3xl p-6">
-            <h2 className="text-xl font-bold text-white">
-              What Swiggy Handles
-            </h2>
-            <p className="mt-5 text-sm leading-6 text-muted">
-              Swiggy provides restaurant data, menu availability, pricing,
-              order processing, delivery, and payment flows used by SnapOrder.
-              Order data and delivery operations are governed by Swiggy&apos;s
-              privacy practices.
-            </p>
+            <dl className="mt-6 border-t border-rule">
+              {section.rows.map((row) => (
+                <div
+                  key={row.k}
+                  className="grid gap-2 border-b border-rule py-5 sm:grid-cols-3 sm:gap-6"
+                >
+                  <dt className="serif text-[17px] text-ink">{row.k}</dt>
+                  <dd className="text-[14px] leading-relaxed text-ink-2 sm:col-span-2">
+                    {row.v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
+
+        <section className="mt-14 bg-card p-7">
+          <p className="label label-chilli">Questions</p>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-2">
+            For anything about Swiggy-powered data handling in this Builders
+            Club experience, write to{" "}
             <a
-              href={swiggyPrivacyUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-4 py-2 text-sm font-semibold text-orange-300 transition-colors hover:border-orange-300/60 hover:bg-orange-500/20 hover:text-orange-200"
+              href="mailto:builders@swiggy.in"
+              className="link-draw font-semibold text-ink"
             >
-              Swiggy privacy policy
-              <ExternalLink size={14} />
+              builders@swiggy.in
             </a>
-          </section>
+            .
+          </p>
+          <a
+            href={swiggyPrivacyUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-press-sm mt-6 inline-flex items-center gap-2 rounded-full border border-ink bg-card px-5 py-2.5 text-[13px] font-semibold text-ink"
+          >
+            Swiggy privacy policy
+            <ArrowUpRight size={14} />
+          </a>
+        </section>
 
-          <section className="glass rounded-3xl p-6">
-            <h2 className="text-xl font-bold text-white">Data Questions</h2>
-            <p className="mt-5 text-sm leading-6 text-muted">
-              For questions about Swiggy-powered data handling in this Builders
-              Club experience, contact{" "}
-              <a
-                href="mailto:builders@swiggy.in"
-                className="font-semibold text-orange-300 transition-colors hover:text-orange-200"
-              >
-                builders@swiggy.in
-              </a>
-              .
-            </p>
-          </section>
-        </div>
+        <div className="perf mt-16" />
+        <p className="mono py-6 text-[10px] text-ink-3">
+          © 2026 SNAPORDER · BUILT FOR SWIGGY BUILDERS CLUB
+        </p>
       </div>
     </main>
   );

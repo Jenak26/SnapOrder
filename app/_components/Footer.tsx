@@ -1,116 +1,118 @@
-import {
-  Camera,
-  Globe,
-  MessageCircle,
-  Heart,
-  Mail,
-  ArrowUpRight,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import Wordmark from "./Wordmark";
 
-const footerLinks = {
-  Product: [
-    { label: "How It Works", href: "#features" },
-    { label: "Restaurants", href: "#restaurants" },
-    { label: "Pricing", href: "#" },
-    { label: "API", href: "#" },
-  ],
-  Company: [
-    { label: "About", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press", href: "#" },
-  ],
-  Support: [
-    { label: "Help Center", href: "#" },
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "#" },
-    { label: "Contact", href: "#" },
-  ],
-};
-
-const socials = [
-  { icon: MessageCircle, href: "#", label: "Twitter" },
-  { icon: Heart, href: "#", label: "Instagram" },
-  { icon: Globe, href: "#", label: "Website" },
-  { icon: Mail, href: "#", label: "Email" },
+/**
+ * The previous footer advertised Pricing, API, Blog, Careers and Press, five
+ * links that all pointed at "#". Dead navigation is worse than no navigation,
+ * so this lists only destinations that exist.
+ */
+const columns = [
+  {
+    heading: "The page",
+    links: [
+      { label: "Upload a photo", href: "#upload" },
+      { label: "Your matches", href: "#demo" },
+      { label: "Kitchens nearby", href: "#restaurants" },
+      { label: "How it works", href: "#method" },
+    ],
+  },
+  {
+    heading: "Data",
+    links: [
+      { label: "How we handle your data", href: "/privacy" },
+      {
+        label: "Swiggy privacy policy",
+        href: "https://www.swiggy.com/privacy-policy",
+        external: true,
+      },
+      { label: "Swiggy", href: "https://www.swiggy.com", external: true },
+    ],
+  },
+  {
+    heading: "Built by",
+    links: [
+      {
+        label: "Janak Kabra",
+        href: "https://github.com/jenak26",
+        external: true,
+      },
+      { label: "Source on GitHub", href: "https://github.com/jenak26/SnapOrder", external: true },
+    ],
+  },
 ];
 
 export default function Footer() {
   return (
-    <footer id="footer" className="relative border-t border-border/50 pb-24">
-      <div className="mx-auto max-w-7xl px-5 pt-16 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-5">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <a href="#" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-white">
-                <Camera size={18} strokeWidth={2.5} />
-              </div>
-              <span className="text-lg font-bold tracking-tight text-foreground">
-                Snap<span className="text-accent">Order</span>
-              </span>
-            </a>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              Upload any food photo and instantly order the closest matching dish
-              from top restaurants near you.
+    <footer
+      id="footer"
+      className="relative overflow-hidden bg-ink pt-20 text-paper"
+    >
+      <div className="mx-auto max-w-[1400px] px-5 lg:px-10">
+        <div className="grid gap-12 border-b border-paper/12 pb-14 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <Wordmark inverted />
+            <p className="mt-6 max-w-sm text-[15px] leading-[1.7] text-paper/65">
+              Photograph a dish anywhere, a menu, a feed, someone else&apos;s
+              plate, and order the closest thing to it from a kitchen near you.
             </p>
 
-            {/* Socials */}
-            <div className="mt-6 flex gap-3">
-              {socials.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    aria-label={s.label}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted transition-all hover:border-accent hover:text-accent hover:bg-accent/5"
-                  >
-                    <Icon size={16} />
-                  </a>
-                );
-              })}
-            </div>
+            <a
+              href="#upload"
+              className="btn-press-sm mt-8 inline-flex items-center gap-2.5 rounded-full bg-chilli px-6 py-3 text-[14px] font-semibold text-card hover:bg-chilli-2"
+              style={{ boxShadow: "2px 2px 0 #f2ece1" }}
+            >
+              Snap a dish
+              <ArrowUpRight size={15} />
+            </a>
           </div>
 
-          {/* Links */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted">
-                {category}
-              </h4>
-              <ul className="space-y-3">
-                {links.map((link) => (
+          {columns.map((col) => (
+            <nav key={col.heading} className="lg:col-span-2 lg:col-start-auto">
+              <h4 className="label text-paper/45">{col.heading}</h4>
+              <ul className="mt-5 space-y-3">
+                {col.links.map((link) => (
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="group flex items-center gap-1 text-sm text-muted transition-colors hover:text-foreground"
+                      {...("external" in link && link.external
+                        ? { target: "_blank", rel: "noreferrer" }
+                        : {})}
+                      className="link-draw inline-flex items-start gap-1 py-1.5 text-[14px] text-paper/70 transition-colors hover:text-paper"
                     >
                       {link.label}
-                      <ArrowUpRight
-                        size={12}
-                        className="opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
+                      {"external" in link && link.external ? (
+                        <ArrowUpRight size={11} className="mt-1 opacity-50" />
+                      ) : null}
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 sm:flex-row">
-          <p className="text-xs text-muted">
-            © 2026 SnapOrder. All rights reserved.
+        {/* Colophon */}
+        <div className="flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="mono text-[11px] text-paper/45">
+            © 2026 SnapOrder · Built for Swiggy Builders Club
           </p>
-          <p className="text-xs text-muted">
-            Made with{" "}
-            <span className="text-accent">♥</span> for food lovers
-            everywhere
+          <p className="mono text-[11px] text-paper/45">
+            Find your next favourite.
           </p>
         </div>
+      </div>
+
+      {/* Oversized wordmark, cropped by the page edge. Typography as the
+          closing image rather than a row of social glyphs. */}
+      <div
+        aria-hidden
+        className="pointer-events-none select-none overflow-hidden px-5 lg:px-10"
+      >
+        <p className="display -mb-[0.16em] whitespace-nowrap text-[19vw] leading-[0.78] text-paper/8">
+          SnapOrder
+        </p>
       </div>
     </footer>
   );
 }
+

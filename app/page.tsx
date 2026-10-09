@@ -8,7 +8,7 @@ import DemoPreview from "./_components/DemoPreview";
 import RestaurantCards from "./_components/RestaurantCards";
 import StickyCart from "./_components/StickyCart";
 import CartSidebar from "./_components/CartSidebar";
-import Features from "./_components/Features";
+import Method from "./_components/Method";
 import Footer from "./_components/Footer";
 import ChatToggleButton from "./_components/ChatToggleButton";
 import ChatPanel from "./_components/ChatPanel";
@@ -51,8 +51,9 @@ export default function Home() {
 
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <Navbar />
-      <main>
+      <main id="main-content">
         <Hero />
         <UploadCard
           onResults={setMatchResults}
@@ -60,7 +61,7 @@ export default function Home() {
         />
         <DemoPreview results={matchResults} analysis={analysis} />
         <RestaurantCards analysis={analysis} />
-        <Features />
+        <Method />
       </main>
       <Footer />
       <StickyCart />
@@ -91,3 +92,4 @@ export default function Home() {
     </>
   );
 }
+

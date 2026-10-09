@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Clipboard, Home, RefreshCw, Send } from "lucide-react";
+import { Clipboard, Home, RefreshCw, Send, Check } from "lucide-react";
+import Wordmark from "./_components/Wordmark";
 
 interface ErrorBoundaryProps {
   error: Error & { digest?: string };
@@ -40,7 +41,9 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
         body: JSON.stringify({
           errorMessage: error.message || "Unhandled SnapOrder error",
           correlationId,
-          context: error.digest ? `app_error_boundary | ${error.digest}` : "app_error_boundary",
+          context: error.digest
+            ? `app_error_boundary | ${error.digest}`
+            : "app_error_boundary",
         }),
       });
     } finally {
@@ -49,86 +52,94 @@ export default function Error({ error, reset }: ErrorBoundaryProps) {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-5 py-10 text-foreground">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-1/4 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-accent/10 blur-[110px]" />
-        <div className="absolute bottom-0 right-1/4 h-[280px] w-[280px] rounded-full bg-orange-400/10 blur-[90px]" />
+    <main className="flex min-h-screen flex-col px-5 py-10 lg:px-10">
+      <div className="w-fit">
+        <Wordmark />
       </div>
 
-      <section className="glass-strong relative z-10 w-full max-w-xl rounded-3xl p-6 text-center shadow-2xl shadow-black/40 sm:p-8">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 text-accent glow-orange">
-          <AlertTriangle size={30} />
-        </div>
+      <div className="flex flex-1 items-center">
+        <div className="w-full max-w-2xl">
+          <div className="flex items-center gap-4">
+            <span className="mono text-[11px] text-chilli">!!</span>
+            <span className="label">Something burned</span>
+            <span className="rule-h" />
+          </div>
 
-        <h1 className="mt-6 text-3xl font-bold tracking-tight text-white">
-          Something went wrong
-        </h1>
-        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
-          SnapOrder hit an unexpected issue. Try again, head home, or send this
-          report to Swiggy support with the correlation ID below.
-        </p>
+          <h1 className="display mt-7 text-[3rem] leading-[0.9] sm:text-[5rem]">
+            The order
+            <br />
+            <span className="display-em">didn&apos;t go through.</span>
+          </h1>
 
-        {process.env.NODE_ENV === "development" && (
-          <pre className="mt-6 max-h-36 overflow-auto rounded-2xl border border-white/10 bg-black/50 p-4 text-left text-xs leading-5 text-orange-100">
-            <code>{error.message}</code>
-          </pre>
-        )}
-
-        <div className="mt-6 rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-orange-300">
-            Correlation ID
+          <p className="mt-7 max-w-lg text-[15px] leading-relaxed text-ink-2">
+            SnapOrder hit an unexpected problem. Try again, head back to the
+            start, or send this docket number to Swiggy support.
           </p>
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-black/35 px-3 py-2">
-            <code className="text-sm font-semibold text-white">{correlationId}</code>
+
+          {process.env.NODE_ENV === "development" && (
+            <pre className="mono mt-8 max-h-40 overflow-auto border-l-2 border-danger bg-card p-4 text-left text-[12px] leading-5 text-danger">
+              <code>{error.message}</code>
+            </pre>
+          )}
+
+          {/* Docket number */}
+          <div className="mt-8 flex max-w-md items-center justify-between gap-4 bg-card px-5 py-4">
+            <div className="min-w-0">
+              <p className="label">Docket number</p>
+              <code className="mono mt-1.5 block truncate text-[15px] font-semibold text-ink">
+                {correlationId}
+              </code>
+            </div>
             <button
               type="button"
               onClick={copyCorrelationId}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/70 transition-colors hover:border-accent/50 hover:text-accent"
-              aria-label="Copy correlation ID"
-              title={copied ? "Copied" : "Copy correlation ID"}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule text-ink transition-colors hover:border-ink hover:bg-paper-2"
+              aria-label="Copy docket number"
+              title={copied ? "Copied" : "Copy docket number"}
             >
-              <Clipboard size={14} />
+              {copied ? (
+                <Check size={14} strokeWidth={2.5} className="text-cardamom" />
+              ) : (
+                <Clipboard size={14} />
+              )}
             </button>
           </div>
-          {copied && (
-            <p className="mt-2 text-xs font-medium text-orange-200">Copied</p>
+
+          {reportStatus === "sent" && (
+            <p className="mt-4 max-w-md border-l-2 border-cardamom bg-cardamom/8 px-4 py-3 text-[13px] font-medium text-cardamom">
+              Logged — thank you.
+            </p>
           )}
-        </div>
 
-        {reportStatus === "sent" && (
-          <p className="mt-5 rounded-2xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success">
-            Thanks! We&apos;ve logged this issue.
-          </p>
-        )}
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <button
-            type="button"
-            onClick={reset}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
-          >
-            <RefreshCw size={16} />
-            Try Again
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition-colors hover:border-accent/40 hover:bg-white/10"
-          >
-            <Home size={16} />
-            Go Home
-          </button>
-          <button
-            type="button"
-            onClick={reportIssue}
-            disabled={reportStatus !== "idle"}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 text-sm font-semibold text-orange-200 transition-colors hover:border-orange-300/60 hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            <Send size={16} />
-            {reportStatus === "sending" ? "Reporting..." : "Report this issue"}
-          </button>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={reset}
+              className="btn-press inline-flex items-center gap-2 rounded-full bg-chilli px-6 py-3.5 text-[14px] font-semibold text-card hover:bg-chilli-2"
+            >
+              <RefreshCw size={15} />
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="btn-press inline-flex items-center gap-2 rounded-full border border-ink bg-card px-6 py-3.5 text-[14px] font-semibold text-ink"
+            >
+              <Home size={15} />
+              Start over
+            </button>
+            <button
+              type="button"
+              onClick={reportIssue}
+              disabled={reportStatus !== "idle"}
+              className="inline-flex items-center gap-2 rounded-full border border-rule px-6 py-3.5 text-[14px] font-medium text-ink-2 transition-colors hover:border-ink hover:text-ink disabled:opacity-50"
+            >
+              <Send size={15} />
+              {reportStatus === "sending" ? "Reporting…" : "Report this"}
+            </button>
+          </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
